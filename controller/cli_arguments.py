@@ -22,7 +22,11 @@ class CLIArguments:
             required=True,
             help="CLI Argument to Be Defined Later"
         )
-        
+        self._parser.add_argument(
+            "--lr_hitter",
+            type=float,
+            default=1e-5,
+        )
 
     def parse(self):
         self._args = self._parser.parse_args()
