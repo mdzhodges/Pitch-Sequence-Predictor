@@ -4,8 +4,8 @@ import torch
 from torch.utils.data import Dataset
 
 class HitterDataset(Dataset):
-    def __init__(self, csv_path: str):
-        df = pd.read_csv(csv_path)
+    def __init__(self, parquet_file_path: str):
+        df = pd.read_parquet(parquet_file_path)
 
         exclude = {"IDfg", "Season", "Name", "Team", "Age", "G"}
         numeric_cols = [
