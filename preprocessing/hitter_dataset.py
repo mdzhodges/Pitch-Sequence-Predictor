@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
+from utils.logger import Logger
 
 class HitterDataset(Dataset):
     def __init__(self, csv_path: str):
@@ -40,6 +41,9 @@ class HitterDataset(Dataset):
         X[torch.isnan(X)] = 0.0
 
         self.X = X
+        
+        self.logger = Logger(self.__class__.__name__)
+        self.logger.info("Hitter Dataset Populated to Tensors")
 
     def __len__(self):
         return len(self.X)

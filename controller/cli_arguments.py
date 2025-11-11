@@ -22,6 +22,7 @@ class CLIArguments:
             required=True,
             help="CLI Argument to Be Defined Later"
         )
+        
 
     def parse(self):
         self._args = self._parser.parse_args()
