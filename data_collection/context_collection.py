@@ -1,70 +1,123 @@
-from pybaseball import statcast
+from pathlib import Path
+
 import pandas as pd
+from pybaseball import statcast
 
-# Define the date range for the 2025 season
-START_DATE = "2025-03-17"
-END_DATE = "2025-09-28"
+from utils.constants import Constants
+from utils.logger import Logger
 
-print("Downloading Statcast data (this may take a while)...")
-data = statcast(start_dt=START_DATE, end_dt=END_DATE)
 
-print(f"Retrieved {len(data):,} pitches with {len(data.columns)} total columns.")
+class ContextDataCollection:
 
-# Columns to extract (based on 2025 Statcast schema)
-wanted_cols = [
-    'age_bat', 'age_bat_legacy', 'age_pit', 'age_pit_legacy',
-    'api_break_x_arm', 'api_break_x_batter_in', 'api_break_z_with_gravity',
-    'arm_angle', 'at_bat_number', 'attack_angle', 'attack_direction',
-    'away_score', 'ax', 'ay', 'az', 'babip_value', 'balls', 'bat_score',
-    'bat_score_diff', 'bat_speed', 'bat_win_exp', 'batter', 'bb_type',
-    'break_angle_deprecated', 'break_length_deprecated',
-    'delta_home_win_exp', 'delta_pitcher_run_exp', 'delta_run_exp', 'des',
-    'effective_speed', 'estimated_ba_using_speedangle',
-    'estimated_slg_using_speedangle', 'estimated_woba_using_speedangle',
-    'events', 'fld_score', 'hc_x', 'hc_y', 'hit_distance_sc',
-    'hit_location', 'home_score', 'home_score_diff', 'home_team',
-    'home_win_exp', 'hyper_speed', 'if_fielding_alignment', 'inning',
-    'inning_topbot', 'intercept_ball_minus_batter_pos_x_inches',
-    'intercept_ball_minus_batter_pos_y_inches', 'iso_value', 'launch_angle',
-    'launch_speed', 'launch_speed_angle', 'n_priorpa_thisgame_player_at_bat',
-    'n_thruorder_pitcher', 'of_fielding_alignment', 'on_1b', 'on_2b', 'on_3b',
-    'outs_when_up', 'p_throws', 'pfx_x', 'pfx_z', 'pitch_name',
-    'pitch_number', 'pitch_type', 'pitcher', 'pitcher_days_since_prev_game',
-    'pitcher_days_until_next_game', 'plate_x', 'plate_z', 'player_name',
-    'post_away_score', 'post_bat_score', 'post_fld_score', 'post_home_score',
-    'release_extension', 'release_pos_x', 'release_pos_y', 'release_pos_z',
-    'release_speed', 'release_spin_rate', 'spin_axis', 'spin_dir', 'stand',
-    'strikes', 'sv_id', 'swing_length', 'swing_path_tilt', 'sz_bot', 'sz_top',
-    'type', 'vx0', 'vy0', 'vz0', 'woba_denom', 'woba_value', 'zone'
-]
+    def __init__(self) -> None:
+        self.export_context_file_path: Path = Path("data/context_2025_full.parquet")
+        self.export_stat_cast_file_path: Path = Path("data/statcast_context_collection_2025.parquet")
+        self.logger = Logger(self.__class__.__name__)
 
-# Keep only columns that exist in the current dataset
-available_cols = [c for c in wanted_cols if c in data.columns]
-missing_cols = set(wanted_cols) - set(available_cols)
+    def _retrieve_stat_cast_dataframe(self) -> pd.DataFrame:
 
-if missing_cols:
-    print(f"Missing columns skipped ({len(missing_cols)}): {sorted(list(missing_cols))}")
+        try:
 
-# Copy the subset of available columns
-context = data[available_cols].copy()
+            self.logger.info("Retrieving StatCast data:")
+            self.logger.info("=" * 100)
 
-# Add base runner presence columns if missing
-for base_col in ["on_1b", "on_2b", "on_3b"]:
-    if base_col not in context.columns:
-        context[base_col] = pd.NA
+            statcast_dataframe: pd.DataFrame = statcast(start_dt=Constants.START_DATE_STR,
+                                                        end_dt=Constants.END_DATE_STR)
+            dataframe_length: int = len(statcast_dataframe)
+            num_dataframe_columns: int = len(statcast_dataframe.columns)
 
-# Compute total runners on base
-context["runners_on_base"] = context[["on_1b", "on_2b", "on_3b"]].notna().sum(axis=1)
+            self.logger.info(f"Successfully retrieved {dataframe_length:,} records with {num_dataframe_columns:,}")
+            self.logger.info("=" * 100)
 
-# Add convenience aliases for modeling
-if "estimated_ba_using_speedangle" in context.columns:
-    context["xba"] = context["estimated_ba_using_speedangle"]
-if "estimated_woba_using_speedangle" in context.columns:
-    context["xwoba"] = context["estimated_woba_using_speedangle"]
-if "estimated_slg_using_speedangle" in context.columns:
-    context["xslg"] = context["estimated_slg_using_speedangle"]
+            return statcast_dataframe
 
-# Save the processed context dataset
-context.to_csv("data/context_2025_full.csv", index=False)
+        except Exception as e:
+            self.logger.error(f"Exception thrown while retrieving statcast data {e}")
+            raise Exception(f"Exception thrown while retrieving statcast data {e}")
 
-print(f"Saved {len(context):,} rows × {len(context.columns)} columns to data/context_2025_full.csv")
+    def _get_cleaned_dataframe(self, statcast_dataframe: pd.DataFrame) -> pd.DataFrame:
+
+        available_columns_list: list[str] = []
+
+        for column_str in Constants.CONTEXT_COLUMNS_LIST:
+            if column_str in statcast_dataframe.columns:
+                available_columns_list.append(column_str)
+
+        missing_columns_list: set[str] = set(Constants.CONTEXT_COLUMNS_LIST) - set(available_columns_list)
+        missing_columns_list_length: int = len(missing_columns_list)
+        sorted_missing_columns_list: list[str] = sorted(list(missing_columns_list))
+
+        if missing_columns_list:
+            self.logger.info(f"Missing columns skipped ({missing_columns_list_length}): {sorted_missing_columns_list}")
+
+        # Copy the subset of available columns
+        context_dataframe: pd.DataFrame = statcast_dataframe[available_columns_list].copy()
+
+        return context_dataframe
+
+    def export_stat_cast_dataframe(self) -> None:
+
+        statcast_dataframe: pd.DataFrame = self._retrieve_stat_cast_dataframe()
+        cleaned_dataframe: pd.DataFrame = self._get_cleaned_dataframe(statcast_dataframe=statcast_dataframe)
+
+        try:
+
+            self.logger.info("Exporting StatCast Data:")
+            self.logger.info("=" * 100)
+
+            cleaned_dataframe.to_parquet(path=self.export_stat_cast_file_path, index=False)
+
+            self.logger.info(f"Successfully exported StatCast Data")
+            self.logger.info("=" * 100)
+
+        except Exception as e:
+            self.logger.error(f"Exception thrown while exporting statcast data {e}")
+            raise Exception(f"Exception thrown while exporting statcast data {e}")
+
+    # Columns to extract (based on 2025 Statcast schema)
+
+    def _get_stat_cast_dataframe(self) -> pd.DataFrame:
+        return pd.read_parquet(path=self.export_stat_cast_file_path)
+
+    def _get_processed_dataframe(self) -> pd.DataFrame:
+        statcast_dataframe: pd.DataFrame = self._get_stat_cast_dataframe()
+
+        # Add base runner presence columns if missing
+        for base_col in ["on_1b", "on_2b", "on_3b"]:
+            if base_col not in statcast_dataframe.columns:
+                statcast_dataframe[base_col] = pd.NA
+
+        # Compute total runners on base
+        statcast_dataframe["runners_on_base"] = statcast_dataframe[["on_1b", "on_2b", "on_3b"]].notna().sum(axis=1)
+
+        # Add convenience aliases for modeling
+        if "estimated_ba_using_speedangle" in statcast_dataframe.columns:
+            statcast_dataframe["xba"] = statcast_dataframe["estimated_ba_using_speedangle"]
+        if "estimated_woba_using_speedangle" in statcast_dataframe.columns:
+            statcast_dataframe["xwoba"] = statcast_dataframe["estimated_woba_using_speedangle"]
+        if "estimated_slg_using_speedangle" in statcast_dataframe.columns:
+            statcast_dataframe["xslg"] = statcast_dataframe["estimated_slg_using_speedangle"]
+
+        return statcast_dataframe
+
+    def export_dataframe_to_parquet_file(self) -> None:
+
+        context_dataframe: pd.DataFrame = self._get_processed_dataframe()
+        context_dataframe_length: int = len(context_dataframe)
+        context_dataframe_column_length: int = len(context_dataframe.columns)
+
+        try:
+            self.logger.info(f"Exporting data to: {self.export_context_file_path}")
+            self.logger.info("=" * 100)
+
+            context_dataframe.to_parquet(path=self.export_context_file_path, index=False)
+
+            self.logger.info(
+                f"Saved {context_dataframe_length:,} rows × {context_dataframe_column_length:,} columns to {self.export_context_file_path}")
+
+            self.logger.info(f"Successfully exported data to: {self.export_context_file_path}")
+            self.logger.info("=" * 100)
+
+        except Exception as e:
+            self.logger.error(f"Exception thrown while exporting context data {e}")
+            raise Exception(f"Exception thrown while exporting context data {e}")
