@@ -2,7 +2,7 @@ import asyncio
 
 from controller.cli_arguments import CLIArguments
 from controller.controller import Controller
-from data_collection.pitch_sequence_collection import PitchSequenceDataCollection
+from data_collection.context_collection import ContextDataCollection
 from utils.logger import Logger
 
 
@@ -13,10 +13,15 @@ async def main() -> int:
 
         controller: Controller = Controller(parsed_args=args)
 
-        pitch_sequence_data_collection: PitchSequenceDataCollection = PitchSequenceDataCollection()
+        # pitch_sequence_data_collection: PitchSequenceDataCollection = PitchSequenceDataCollection()
+        #
+        # pitch_sequence_data_collection.export_stat_cast_pitch_by_pitch_dataframe()
+        # pitch_sequence_data_collection.export_dataframe_to_parquet_file()
 
-        pitch_sequence_data_collection.export_stat_cast_pitch_by_pitch_dataframe()
-        pitch_sequence_data_collection.export_dataframe_to_parquet_file()
+        context_data_collection: ContextDataCollection = ContextDataCollection()
+
+        context_data_collection.export_stat_cast_dataframe()
+        context_data_collection.export_dataframe_to_parquet_file()
 
 
 
