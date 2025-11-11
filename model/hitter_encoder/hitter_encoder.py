@@ -4,3 +4,7 @@ class HitterEncoder:
     
     def __init__(self, dataset: HitterDataset):
         self.dataset = dataset
+        
+        
+    def forward(self):
+        pass
