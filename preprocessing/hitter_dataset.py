@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-class BatterDataset(Dataset):
+class HitterDataset(Dataset):
     def __init__(self, csv_path: str):
         df = pd.read_csv(csv_path)
 
@@ -55,10 +55,3 @@ class BatterDataset(Dataset):
             return self.X[idx[0]]
         else:
             raise ValueError(f"No player found matching '{name}'")
-
- 
- 
-dataset = BatterDataset("data/batters_2025_full.csv")
-
-# Access tensor for one player
-jose_tensor = dataset.get_by_name("Jose Ramirez")
