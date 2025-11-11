@@ -4,7 +4,9 @@ from model.hitter_encoder.hitter_encoder import HitterEncoder
 
 class PitchSequenceTrainer:
     
-    def __init__(self, hitter_encoder: HitterEncoder, num_epochs: int = 10, 
+    def __init__(self, hitter_encoder: HitterEncoder, 
+                 num_epochs: int = 10, 
+                 sample: int = 1000,
                  dropout_hitter: float = .3, 
                  dropout_pitcher: float = .3,
                  dropout_context: float = .3,
@@ -26,12 +28,21 @@ class PitchSequenceTrainer:
         self.learning_rate_context = learning_rate_context
         self.learning_rate_pitch_sequence = learning_rate_pitch_sequence
         
+        # Various training needs
+        self.num_epochs = num_epochs
+        self.sample = sample
+        
         
         # encoders
         self.hitter_encoder = hitter_encoder
         self.pitcher_encoder = None
         self.context_encoder = None
         self.pitch_sequence_encoder = None
+        
+        # Fusion #1 (Hitter and Pitcher)
+        self.hitter_pitcher_fusion = None
+        #Fusion #2 (Context and Pitch)
+        self.context_pitch_sequence_fusion = None
         
     def train(self):
         pass

@@ -13,12 +13,6 @@ async def main() -> int:
 
         controller: Controller = Controller(parsed_args=args)
 
-        pitch_sequence_data_collection: PitchSequenceDataCollection = PitchSequenceDataCollection()
-
-        pitch_sequence_data_collection.export_stat_cast_pitch_by_pitch_dataframe()
-        pitch_sequence_data_collection.export_dataframe_to_parquet_file()
-
-
 
     except Exception as e:
         logger.error(f"Error Message: {e}")
