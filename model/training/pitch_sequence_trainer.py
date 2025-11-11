@@ -1,4 +1,7 @@
 from model.hitter_encoder.hitter_encoder import HitterEncoder
+from model.pitcher_encoder.pitcher_encoder import PitcherEncoder
+from model.context_encoder.context_encoder import ContextEncoder
+from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
 from utils.logger import Logger
 
 
@@ -6,9 +9,9 @@ class PitchSequenceTrainer:
     
     def __init__(self, 
                  hitter_encoder: HitterEncoder, 
-                 pitcher_encoder: None,
-                 context_encoder: None,
-                 pitch_sequence_encoder: None,
+                 pitcher_encoder: PitcherEncoder,
+                 context_encoder: ContextEncoder,
+                 pitch_sequence_encoder: PitchSequenceEncoder,
                  num_epochs: int = 10, 
                  sample: int = 1000,
                  dropout_hitter: float = .3, 
@@ -38,9 +41,9 @@ class PitchSequenceTrainer:
 
         # encoders
         self.hitter_encoder = hitter_encoder
-        self.pitcher_encoder = None
-        self.context_encoder = None
-        self.pitch_sequence_encoder = None
+        self.pitcher_encoder = pitcher_encoder
+        self.context_encoder = context_encoder
+        self.pitch_sequence_encoder = pitch_sequence_encoder
 
         # Fusions
         self.hitter_pitcher_fusion = None

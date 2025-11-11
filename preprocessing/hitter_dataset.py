@@ -44,7 +44,6 @@ class HitterDataset(Dataset):
         
         self.logger = Logger(self.__class__.__name__)
         self.logger.info("Hitter Dataset Populated to Tensors")
-        return self.X
 
     def __len__(self):
         return len(self.X)
