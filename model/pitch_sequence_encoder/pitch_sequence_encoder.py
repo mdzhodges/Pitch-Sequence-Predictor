@@ -2,7 +2,6 @@
 
 class PitchSequenceEncoder:
     
-    def __init__(self, dataset, sample: int): #add typing
+    def __init__(self, dataset): #add typing
         
-        self.sample = sample
         self.dataset = dataset

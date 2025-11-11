@@ -28,7 +28,6 @@ class CLIArguments:
         
     def parse(self):
         self._args = self._parser.parse_args()
-        print(self._args)
         return self._args
 
     def get(self, name: str) -> Any:
