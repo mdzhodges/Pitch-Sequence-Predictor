@@ -17,7 +17,7 @@ cols = [
     "pitch_type", "release_speed",
     "release_spin_rate", "pfx_x", "pfx_z",
     "plate_x", "plate_z",
-    "events", "description"
+    "events"
 ]
 
 # Keep only columns that exist in the data
