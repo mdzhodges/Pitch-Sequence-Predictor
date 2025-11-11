@@ -4,7 +4,11 @@ from utils.logger import Logger
 
 class PitchSequenceTrainer:
     
-    def __init__(self, hitter_encoder: HitterEncoder, 
+    def __init__(self, 
+                 hitter_encoder: HitterEncoder, 
+                 pitcher_encoder: None,
+                 context_encoder: None,
+                 pitch_sequence_encoder: None,
                  num_epochs: int = 10, 
                  sample: int = 1000,
                  dropout_hitter: float = .3, 

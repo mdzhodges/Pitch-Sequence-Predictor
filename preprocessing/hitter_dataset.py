@@ -8,7 +8,7 @@ class HitterDataset(Dataset):
     def __init__(self, parquet_file_path: str):
         df = pd.read_parquet(parquet_file_path)
 
-        exclude = {"IDfg", "Season", "Name", "Team", "Age", "G"}
+        exclude = {"IDfg", "Season", "Team", "Age", "G"}
         numeric_cols = [
             c for c in df.columns
             if c not in exclude and pd.api.types.is_numeric_dtype(df[c])
@@ -44,6 +44,7 @@ class HitterDataset(Dataset):
         
         self.logger = Logger(self.__class__.__name__)
         self.logger.info("Hitter Dataset Populated to Tensors")
+        return self.X
 
     def __len__(self):
         return len(self.X)

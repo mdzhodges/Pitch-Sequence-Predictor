@@ -1,5 +1,6 @@
 from utils.logger import Logger
 from preprocessing.hitter_dataset import HitterDataset
+from preprocessing.pitcher_dataset import PitcherDataset
 from model.training.pitch_sequence_trainer import PitchSequenceTrainer
 from model.hitter_encoder.hitter_encoder import HitterEncoder
 
@@ -22,13 +23,22 @@ class PitchSequencePipeline:
             ):
         # Get data tensors
         self.hitter_dataset = HitterDataset("data/hitters_2025_full.parquet")
+        self.pitcher_dataset = PitcherDataset("data/pitchers_2025_full.parquet")
+        #
+        
         
         # Initialize all encoders
         self.hitter_encoder = HitterEncoder(self.hitter_dataset)
+        self.pitcher_encoder = None
+        self.context_encoder = None
+        self.pitch_sequence_encoder = None ## Pass in needed sample
         
         # Initialize trainer
         self.trainer = PitchSequenceTrainer(
             hitter_encoder=self.hitter_encoder,
+            pitcher_encoder = self.pitcher_encoder,
+            context_encoder = self.context_encoder,
+            self.pitch_sequence_encoder = self.pitch_sequence_encoder,
             num_epochs=num_epochs,
             dropout_hitter=dropout_hitter,
             dropout_pitcher=dropout_pitcher,
