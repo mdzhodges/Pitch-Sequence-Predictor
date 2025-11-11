@@ -15,7 +15,6 @@ class CLIArguments:
         self._args = None
 
     def _define_arguments(self) -> None:
-        self._parser.add_argument("-m","--cli_argument_name",type=str,required=True,help="CLI Argument to Be Defined Later")
         self._parser.add_argument("--lr_hitter",type=float,default=1e-5)
         self._parser.add_argument("--lr_pitcher",type=float,default=1e-5)
         self._parser.add_argument("--lr_context",type=float,default=1e-5)
@@ -25,10 +24,11 @@ class CLIArguments:
         self._parser.add_argument("--dropout_context", type=float, default=.3)
         self._parser.add_argument("--dropout_pitch_seq", type=float, default=.3)
         self._parser.add_argument("--sample", type=int, default=1000)
-        self._parser.add_argument("num_epochs", type=int, default=20)
+        self._parser.add_argument("--num_epochs", type=int, default=20)
         
     def parse(self):
         self._args = self._parser.parse_args()
+        print(self._args)
         return self._args
 
     def get(self, name: str) -> Any:

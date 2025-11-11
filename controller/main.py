@@ -11,7 +11,7 @@ async def main() -> int:
     args: CLIArguments = CLIArguments()
     try:
 
-        controller: Controller = Controller(parsed_args=args)
+        controller: Controller = Controller(parsed_args=args.parse())
 
 
     except Exception as e:

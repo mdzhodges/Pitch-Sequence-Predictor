@@ -17,7 +17,8 @@ class PitchSequencePipeline:
             learning_rate_hitter: float = 1e-5,
             learning_rate_pitcher: float = 1e-5,
             learning_rate_context: float = 1e-5,
-            learning_rate_pitch_sequence: float = 1e-5
+            learning_rate_pitch_sequence: float = 1e-5,
+            sample: int = 1000,
             ):
         # Get data tensors
         self.hitter_dataset = HitterDataset("data/hitters_2025_full.parquet")
@@ -37,6 +38,7 @@ class PitchSequencePipeline:
             learning_rate_pitcher=learning_rate_pitcher,
             learning_rate_context=learning_rate_context,
             learning_rate_pitch_sequence=learning_rate_pitch_sequence,
+            sample=sample
         )
         
         
