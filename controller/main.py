@@ -1,16 +1,25 @@
 import asyncio
+
 from controller.cli_arguments import CLIArguments
-from utils.logger import Logger
 from controller.controller import Controller
+from data_collection.pitch_sequence_collection import PitchSequenceDataCollection
+from utils.logger import Logger
 
 
 async def main() -> int:
     logger: Logger = Logger(class_name=__name__)
     args: CLIArguments = CLIArguments()
     try:
-        
-        logger.info(f"Hello from inside: {__name__}")
-        Controller(args.parse)
+
+        controller: Controller = Controller(parsed_args=args)
+
+        pitch_sequence_data_collection: PitchSequenceDataCollection = PitchSequenceDataCollection()
+
+        pitch_sequence_data_collection.export_stat_cast_pitch_by_pitch_dataframe()
+        pitch_sequence_data_collection.export_dataframe_to_parquet_file()
+
+
+
     except Exception as e:
         logger.error(f"Error Message: {e}")
         raise Exception(f"Error Message: {e}") from e
