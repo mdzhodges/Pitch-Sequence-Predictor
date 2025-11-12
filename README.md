@@ -51,17 +51,14 @@ The following is an example `.env` file
 
 ```text
 SAMPLE=1000
+BATCH_SIZE=25
 NUM_EPOCHS=20
-LR_HITTER=1E-5
-LR_PITCHER=1E-5
-LR_CONTEXT=1E-5
 LR_PITCH_SEQ=1E-5
-DROPOUT_HITTER=.3
-DROPOUT_PITCHER=.3
-DROPOUT_CONTEXT=.3
 DROPOUT_PITCH_SEQ=.3
 HITTER_PARQUET_FILE_PATH="data/hitters_2025_full.parquet"
+CONTEXT_PARQUET_FILE_PATH="data/context_2025_full.parquet"
 PITCHER_PARQUET_FILE_PATH="data/pitchers_2025_full.parquet"
+PITCH_SEQUENCE_PARQUET_FILE_PATH"data/pitch_sequence_2025.parquet"
 ```
 
 
