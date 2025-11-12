@@ -1,5 +1,6 @@
 from controller.cli_arguments import CLIArguments
 from model.pitch_sequence_pipeline import PitchSequencePipeline
+from model.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
 from utils.logger import Logger
 
 
@@ -9,7 +10,7 @@ class Controller:
         self.parsed_args = parsed_args
         self._logger = Logger(self.__class__.__name__)
         
-        PitchSequencePipeline(
+        components = PitchSequencePipelineComponents(
             num_epochs=parsed_args.num_epochs,
             learning_rate_hitter=parsed_args.lr_hitter,
             learning_rate_pitcher=parsed_args.lr_pitcher,
@@ -19,4 +20,7 @@ class Controller:
             dropout_pitcher=parsed_args.dropout_pitcher,
             dropout_context=parsed_args.dropout_context,
             dropout_pitch_sequence=parsed_args.dropout_pitch_seq,
-            sample=parsed_args.sample).execute()
+            sample=parsed_args.sample
+        )
+        
+        PitchSequencePipeline(pitch_sequence_pipeline_components=components).execute()

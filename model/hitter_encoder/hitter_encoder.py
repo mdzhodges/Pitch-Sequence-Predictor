@@ -13,8 +13,8 @@ class HitterEncoder:
         self.dropout = model_params.dropout
         self.logger = Logger(self.__class__.__name__)     
         
-        self.num_features = self.hidden_dim = len(self.dataset.feature_cols)
-        self.logger.info(str(len(self.dataset.feature_cols)))
+        self.num_features = self.hidden_dim = len(self.dataset.feature_columns)
+        self.logger.info(str(len(self.dataset.feature_columns)))
         
                 
     def forward(self):

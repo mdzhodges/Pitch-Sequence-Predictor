@@ -19,7 +19,7 @@ class PitchSequencePipeline:
         self.logger = Logger(self.__class__.__name__)
         
         #Sample for the pitch sequence dataset
-        self.sample = PitchSequencePipelineComponents.sample
+        self.sample = pitch_sequence_pipeline_components.sample
         
         
         # Get data tensors
@@ -29,10 +29,10 @@ class PitchSequencePipeline:
         self.pitch_sequence_dataset = PitchSequenceDataset("data/pitch_sequence_2025.parquet", sample=self.sample)
         
         # Initialize model_params 
-        self.hitter_model_params = ModelComponents(learning_rate=PitchSequencePipelineComponents.learning_rate_hitter, dropout=PitchSequencePipelineComponents.dropout_hitter, dataset=self.hitter_dataset)
-        self.pitcher_model_params = ModelComponents(learning_rate=PitchSequencePipelineComponents.learning_rate_pitcher, dropout=PitchSequencePipelineComponents.dropout_pitcher, dataset=self.pitcher_dataset)
-        self.context_model_params = ModelComponents(learning_rate=PitchSequencePipelineComponents.learning_rate_context, dropout=PitchSequencePipelineComponents.dropout_context, dataset=self.context_dataset)
-        self.pitch_seq_model_params = ModelComponents(learning_rate=PitchSequencePipelineComponents.learning_rate_pitch_sequence, dropout=PitchSequencePipelineComponents.dropout_pitch_sequence, dataset=self.pitch_sequence_dataset)
+        self.hitter_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_hitter, dropout=pitch_sequence_pipeline_components.dropout_hitter, dataset=self.hitter_dataset)
+        self.pitcher_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitcher, dropout=pitch_sequence_pipeline_components.dropout_pitcher, dataset=self.pitcher_dataset)
+        self.context_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_context, dropout=pitch_sequence_pipeline_components.dropout_context, dataset=self.context_dataset)
+        self.pitch_seq_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitch_sequence, dropout=pitch_sequence_pipeline_components.dropout_pitch_sequence, dataset=self.pitch_sequence_dataset)
         
         # Initialize all encoders
         self.hitter_encoder = HitterEncoder(self.hitter_model_params)
@@ -46,7 +46,7 @@ class PitchSequencePipeline:
             pitcher_encoder=self.pitch_sequence_encoder,
             context_encoder=self.context_dataset,
             pitch_seq_encoder=self.pitch_sequence_encoder,
-            num_epochs=PitchSequencePipelineComponents.num_epochs,
+            num_epochs=pitch_sequence_pipeline_components.num_epochs,
         )
 
         # Initialize trainer
