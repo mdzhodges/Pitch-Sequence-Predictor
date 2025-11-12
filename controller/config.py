@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +16,8 @@ class Config(BaseSettings):
     DROPOUT_PITCHER: float = .3
     DROPOUT_CONTEXT: float = .3
     DROPOUT_PITCH_SEQ: float = .3
+    HITTER_PARQUET_FILE_PATH: Path
+    PITCHER_PARQUET_FILE_PATH: Path
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
