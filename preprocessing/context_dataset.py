@@ -44,7 +44,7 @@ class ContextDataset(Dataset):
         # ------------------------------------------------------------
         # Encode categorical columns (including 'events')
         # ------------------------------------------------------------
-        self.concatenate_map: dict[str, dict[Tensor, int]] = {}
+        self.concatenated_tensor_dict: dict[str, dict[Tensor, int]] = {}
         concatenated_tensor_dict: dict[str, Tensor] = self._get_concatenated_tensor_dict(dataframe=dataframe)
 
         self.x_categorical = concatenated_tensor_dict
@@ -82,7 +82,7 @@ class ContextDataset(Dataset):
             mapping_dict: dict[Tensor, int] = {v: i for i, v in enumerate(vocab_tensor_list)}
             encoded_series = pandas_series.map(mapping_dict).astype(np.int64)
             concatenated_tensor_dict[categorical_column] = torch.tensor(encoded_series.values, dtype=torch.long)
-            self.concatenate_map[categorical_column] = mapping_dict
+            self.concatenated_tensor_dict[categorical_column] = mapping_dict
 
         return concatenated_tensor_dict
 
@@ -108,6 +108,7 @@ class ContextDataset(Dataset):
                                 categorical_dataframe_column_list: list[str]) -> None:
 
         if not numeric_dataframe_column_list and not categorical_dataframe_column_list:
+            self.logger.error("No usable columns found in context parquet.")
             raise ValueError("No usable columns found in context parquet.")
 
     # ------------------------------------------------------------
@@ -123,12 +124,12 @@ class ContextDataset(Dataset):
     # ------------------------------------------------------------
     def get_vocab_sizes(self):
         """Return dict mapping each categorical column → vocabulary size."""
-        return {col: len(vocab) for col, vocab in self.concatenate_map.items()}
+        return {col: len(vocab) for col, vocab in self.concatenated_tensor_dict.items()}
 
     def get_example(self, idx: int = 0):
         """Inspect decoded categorical values for one example."""
         cat_example = {
             col: list(mapping.keys())[list(mapping.values()).index(int(self.x_categorical[col][idx]))]
-            for col, mapping in self.concatenate_map.items()
+            for col, mapping in self.concatenated_tensor_dict.items()
         }
         return {"numeric": self.x_numeric[idx], "categorical": cat_example}
