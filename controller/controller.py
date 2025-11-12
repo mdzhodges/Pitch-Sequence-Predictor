@@ -1,6 +1,6 @@
 from controller.cli_arguments import CLIArguments
 from model.pitch_sequence_pipeline import PitchSequencePipeline
-from model.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
+from model.custom_types.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
 from utils.logger import Logger
 
 

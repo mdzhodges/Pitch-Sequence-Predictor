@@ -1,4 +1,4 @@
-from model.data_types import ModelComponents
+from model.custom_types.data_types import ModelComponents
 from preprocessing.pitch_sequence_dataset import PitchSequenceDataset
 class PitchSequenceEncoder:
     
