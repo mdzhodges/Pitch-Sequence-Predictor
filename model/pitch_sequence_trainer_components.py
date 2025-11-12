@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ModelComponents:
+class PitchSequenceTrainerComponents:
     """Represents the components and hyperparameters for a pitch sequence prediction model.
     
     This class stores encoders and training parameters used to configure and train the model.
