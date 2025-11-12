@@ -3,10 +3,6 @@ from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEnc
 from model.custom_types.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
 from model.custom_types.trainer_type import TrainerComponents
 from model.training.pitch_sequence_trainer import PitchSequenceTrainer
-from preprocessing.context_dataset import ContextDataset
-from preprocessing.hitter_dataset import HitterDataset
-from preprocessing.pitch_sequence_dataset import PitchSequenceDataset
-from preprocessing.pitcher_dataset import PitcherDataset
 from preprocessing.fusion_dataset import FusionDataset
 from utils.logger import Logger
 

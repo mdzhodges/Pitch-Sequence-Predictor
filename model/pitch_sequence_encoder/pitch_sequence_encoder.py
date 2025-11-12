@@ -1,5 +1,4 @@
 from model.custom_types.data_types import ModelComponents
-from preprocessing.pitch_sequence_dataset import PitchSequenceDataset
 class PitchSequenceEncoder:
     
     def __init__(self, model_params: ModelComponents):
