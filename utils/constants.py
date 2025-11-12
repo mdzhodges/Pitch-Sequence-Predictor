@@ -7,6 +7,18 @@ class Constants:
     START_DATE_STR:str = "2025-03-17"
     END_DATE_STR:str = "2025-09-28"
 
+    COLUMN_EXCLUSION_SET: set[str] = {
+        "game_date",
+        "description",
+        "des",
+        "umpire",
+        "sv_id",
+        "pitcher_name",
+        "batter_name",
+        "home_team",
+        "away_team",
+    }
+
     PITCH_SEQUENCE_COLUMNS_LIST: list[str] = [
         "game_date", "game_pk", "at_bat_number", "pitch_number",
         "pitcher", "batter",
