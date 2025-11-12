@@ -1,7 +1,7 @@
 from controller.cli_arguments import CLIArguments
 from model.pitch_sequence_pipeline import PitchSequencePipeline
 from model.custom_types.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
-
+from data_collection.context_data_collection import ContextDataCollection
 from data_collection.fusion_collection import preprocess_unified
 
 
@@ -10,8 +10,12 @@ class Controller:
     def __init__(self, parsed_args) -> None:
         self.parsed_args = parsed_args
         
+        #context_data_collection: ContextDataCollection = ContextDataCollection()
+
+        #context_data_collection.export_stat_cast_dataframe()
+        #context_data_collection.export_dataframe_to_parquet_file()
         
-        # preprocess_unified()
+        #preprocess_unified()
         
         components = PitchSequencePipelineComponents(
             num_epochs=parsed_args.num_epochs,

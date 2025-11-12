@@ -10,3 +10,7 @@ class PitchSequenceEncoder:
         
     def forward(self):
         pass
+    
+    
+    
+    
