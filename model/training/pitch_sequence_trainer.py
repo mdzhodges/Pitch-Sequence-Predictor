@@ -8,6 +8,8 @@ class PitchSequenceTrainer:
 
         # Various training needs
         self.num_epochs = model_params.num_epochs
+        self.batch_size = model_params.batch_size
+        print(self.batch_size)
 
         # encoders
         self.hitter_encoder = model_params.hitter_encoder

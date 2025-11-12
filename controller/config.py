@@ -14,6 +14,7 @@ class Config(BaseSettings):
     DROPOUT_PITCHER: float = .3
     DROPOUT_CONTEXT: float = .3
     DROPOUT_PITCH_SEQ: float = .3
+    BATCH_SIZE: int = 25
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

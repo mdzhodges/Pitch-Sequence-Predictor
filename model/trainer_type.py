@@ -14,3 +14,4 @@ class TrainerComponents:
     pitcher_encoder: PitcherEncoder
     context_encoder: ContextEncoder
     pitch_seq_encoder: PitchSequenceEncoder
+    batch_size: int

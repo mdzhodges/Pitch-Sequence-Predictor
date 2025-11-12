@@ -25,6 +25,8 @@ class CLIArguments:
         self._parser.add_argument("--dropout_pitch_seq", type=float, default=.3)
         self._parser.add_argument("--sample", type=int, default=1000)
         self._parser.add_argument("--num_epochs", type=int, default=20)
+        self._parser.add_argument("--batch_size", type=int, default=25)
+
         
     def parse(self):
         self._args = self._parser.parse_args()

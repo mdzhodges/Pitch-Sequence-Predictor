@@ -13,3 +13,4 @@ class PitchSequencePipelineComponents:
     learning_rate_context: float
     learning_rate_pitch_sequence: float
     sample: int
+    batch_size: int

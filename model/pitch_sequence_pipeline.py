@@ -46,6 +46,7 @@ class PitchSequencePipeline:
             context_encoder=self.context_encoder,
             pitch_seq_encoder=self.pitch_sequence_encoder,
             num_epochs=pitch_sequence_pipeline_components.num_epochs,
+            batch_size=pitch_sequence_pipeline_components.batch_size
         )
 
         # Initialize trainer

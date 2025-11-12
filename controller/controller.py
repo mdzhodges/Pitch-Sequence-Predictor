@@ -20,7 +20,8 @@ class Controller:
             dropout_pitcher=parsed_args.dropout_pitcher,
             dropout_context=parsed_args.dropout_context,
             dropout_pitch_sequence=parsed_args.dropout_pitch_seq,
-            sample=parsed_args.sample
+            sample=parsed_args.sample,
+            batch_size=parsed_args.batch_size
         )
         
         PitchSequencePipeline(pitch_sequence_pipeline_components=components).execute()
