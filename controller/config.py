@@ -15,6 +15,7 @@ class Config(BaseSettings):
     PITCHER_PARQUET_FILE_PATH: Path = Path("data/pitchers_2025_full.parquet")
     CONTEXT_PARQUET_FILE_PATH: Path = Path("data/context_2025_full.parquet")
     PITCH_SEQUENCE_PARQUET_FILE_PATH: Path = Path("data/pitch_sequence_2025.parquet")
+    FUSED_CONTEXT_DATASET_FILE_PATH: Path = Path("data/unified_context.parquet")
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

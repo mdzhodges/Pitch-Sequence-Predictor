@@ -7,7 +7,6 @@ from torch.utils.data import Dataset
 
 from controller.config import Config
 from utils.constants import Constants
-from utils.logger import Logger
 
 
 class PitcherDataset(Dataset):
@@ -33,8 +32,6 @@ class PitcherDataset(Dataset):
         x_feature_tensor[torch.isnan(x_feature_tensor)] = 0.0
 
         self.x_feature_tensor = x_feature_tensor
-
-        self.logger = Logger(self.__class__.__name__)
 
     def _get_numeric_dataframe_columns_list(self, dataframe: pd.DataFrame) -> list[str]:
 

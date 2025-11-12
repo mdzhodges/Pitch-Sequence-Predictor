@@ -4,7 +4,6 @@ import pandas as pd
 from pybaseball import statcast
 
 from utils.constants import Constants
-from utils.logger import Logger
 
 
 class PitchSequenceDataCollection:
@@ -12,24 +11,17 @@ class PitchSequenceDataCollection:
     def __init__(self) -> None:
         self.export_pitch_sequence_file_path: Path = Path("data/pitch_sequence_2025.parquet")
         self.export_stat_cast_pitch_by_pitch_file_path: Path = Path("data/statcast_pitch_by_pitch_2025.parquet")
-        self.logger = Logger(self.__class__.__name__)
 
     def _retrieve_stat_cast_pitch_by_pitch_dataframe(self) -> pd.DataFrame:
 
         try:
 
-            self.logger.info("Retrieving StatCast Pitch-By-Pitch Data:")
-            self.logger.info("=" * 100)
-
             result_dataframe: pd.DataFrame = statcast(start_dt=Constants.START_DATE_STR, end_dt=Constants.END_DATE_STR)
             dataframe_length: int = len(result_dataframe)
 
-            self.logger.info(f"Successfully retrieved {dataframe_length:,} records.")
-            self.logger.info("=" * 100)
             return result_dataframe
 
         except Exception as e:
-            self.logger.error(f"Exception thrown while retrieving statcast pitch-by-pitch data {e}")
             raise Exception(f"Exception thrown while retrieving statcast pitch-by-pitch data {e}")
 
     def export_stat_cast_pitch_by_pitch_dataframe(self) -> None:
@@ -38,16 +30,9 @@ class PitchSequenceDataCollection:
 
         try:
 
-            self.logger.info("Exporting StatCast Pitch-By-Pitch Data:")
-            self.logger.info("=" * 100)
-
             pitch_by_pitch_dataframe.to_parquet(path=self.export_stat_cast_pitch_by_pitch_file_path, index=False)
 
-            self.logger.info(f"Successfully exported StatCast Pitch-By-Pitch Data")
-            self.logger.info("=" * 100)
-
         except Exception as e:
-            self.logger.error(f"Exception thrown while exporting statcast pitch-by-pitch data {e}")
             raise Exception(f"Exception thrown while exporting statcast pitch-by-pitch data {e}")
 
     def _get_stat_cast_pitch_by_pitch_dataframe(self) -> pd.DataFrame:
@@ -103,17 +88,7 @@ class PitchSequenceDataCollection:
         pitch_by_pitch_dataframe_column_length: int = len(pitch_by_pitch_dataframe.columns)
 
         try:
-            self.logger.info(f"Exporting data to: {self.export_pitch_sequence_file_path}")
-            self.logger.info("=" * 100)
-
             pitch_by_pitch_dataframe.to_parquet(path=self.export_pitch_sequence_file_path, index=False)
 
-            self.logger.info(
-                f"Saved {pitch_by_pitch_dataframe_length:,} rows × {pitch_by_pitch_dataframe_column_length:,} columns to {self.export_pitch_sequence_file_path}")
-
-            self.logger.info(f"Successfully exported data to: {self.export_pitch_sequence_file_path}")
-            self.logger.info("=" * 100)
-
         except Exception as e:
-            self.logger.error(f"Exception thrown while exporting pitch sequence data {e}")
             raise Exception(f"Exception thrown while exporting pitch sequence data {e}")

@@ -6,7 +6,6 @@ from torch.utils.data import Dataset
 
 from controller.config import Config
 from utils.constants import Constants
-from utils.logger import Logger
 
 
 class ContextDataset(Dataset):
@@ -51,8 +50,6 @@ class ContextDataset(Dataset):
         concatenated_tensor_dict: dict[str, Tensor] = self._get_concatenated_tensor_dict(dataframe=dataframe)
 
         self.x_categorical = concatenated_tensor_dict
-
-        self.logger = Logger(self.__class__.__name__)
 
     def _get_categorical_dataframe_columns_list(self, dataframe: pd.DataFrame) -> list[str]:
 
@@ -111,7 +108,6 @@ class ContextDataset(Dataset):
                                 categorical_dataframe_column_list: list[str]) -> None:
 
         if not numeric_dataframe_column_list and not categorical_dataframe_column_list:
-            self.logger.error("No usable columns found in context parquet.")
             raise ValueError("No usable columns found in context parquet.")
 
     # ------------------------------------------------------------
@@ -126,7 +122,7 @@ class ContextDataset(Dataset):
 
     # ------------------------------------------------------------
     def get_vocab_sizes(self):
-        """Return dict mapping each categorical column → vocabulary size."""
+        """Return dict mapping each categorical column -> vocabulary size."""
         return {col: len(vocab) for col, vocab in self.concatenated_tensor_dict.items()}
 
     def get_example(self, idx: int = 0):

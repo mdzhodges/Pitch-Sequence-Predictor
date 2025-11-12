@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from preprocessing.pitch_sequence_dataset import PitchSequenceDataset
+from preprocessing.fusion_dataset import FusionDataset
 
 @dataclass
 class ModelComponents():
@@ -14,7 +14,7 @@ class ModelComponents():
     """
     learning_rate: float
     dropout: float
-    dataset: PitchSequenceDataset
+    dataset: FusionDataset
     hidden_dim: int
     embed_dim: int
     

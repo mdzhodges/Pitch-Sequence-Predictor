@@ -6,7 +6,6 @@ from torch.utils.data import Dataset
 
 from controller.config import Config
 from utils.constants import Constants
-from utils.logger import Logger
 
 
 class PitchSequenceDataset(Dataset):
@@ -70,8 +69,6 @@ class PitchSequenceDataset(Dataset):
 
         self.x_categorical = concatenated_tensor_dict
 
-        self.logger = Logger(self.__class__.__name__)
-
     def _get_categorical_dataframe_columns_list(self, dataframe: pd.DataFrame) -> list[str]:
 
         result_list: list[str] = []
@@ -111,7 +108,6 @@ class PitchSequenceDataset(Dataset):
                                 categorical_dataframe_column_list: list[str]) -> None:
 
         if not numeric_dataframe_column_list and not categorical_dataframe_column_list:
-            self.logger.error("No usable columns found in context parquet.")
             raise ValueError("No usable columns found in context parquet.")
 
     # ----------------------------------------------------------------------

@@ -2,11 +2,9 @@ import asyncio
 
 from controller.cli_arguments import CLIArguments
 from controller.controller import Controller
-from utils.logger import Logger
 
 
 async def main() -> int:
-    logger: Logger = Logger(class_name=__name__)
     args: CLIArguments = CLIArguments()
     try:
 
@@ -14,7 +12,6 @@ async def main() -> int:
 
 
     except Exception as e:
-        logger.error(f"Error Message: {e}")
         raise Exception(f"Error Message: {e}") from e
 
     return 0
