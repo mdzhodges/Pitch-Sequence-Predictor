@@ -28,10 +28,10 @@ class PitchSequencePipeline:
         self.pitch_sequence_dataset = PitchSequenceDataset("data/pitch_sequence_2025.parquet", sample=self.sample)
         
         # Initialize model_params 
-        self.hitter_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_hitter, dropout=pitch_sequence_pipeline_components.dropout_hitter, dataset=self.hitter_dataset)
-        self.pitcher_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitcher, dropout=pitch_sequence_pipeline_components.dropout_pitcher, dataset=self.pitcher_dataset)
-        self.context_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_context, dropout=pitch_sequence_pipeline_components.dropout_context, dataset=self.context_dataset)
-        self.pitch_seq_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitch_sequence, dropout=pitch_sequence_pipeline_components.dropout_pitch_sequence, dataset=self.pitch_sequence_dataset)
+        self.hitter_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_hitter, dropout=pitch_sequence_pipeline_components.dropout_hitter, dataset=self.hitter_dataset, hidden_dim=256, embed_dim=128)
+        self.pitcher_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitcher, dropout=pitch_sequence_pipeline_components.dropout_pitcher, dataset=self.pitcher_dataset, hidden_dim=256, embed_dim=128)
+        self.context_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_context, dropout=pitch_sequence_pipeline_components.dropout_context, dataset=self.context_dataset, hidden_dim=256, embed_dim=128)
+        self.pitch_seq_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitch_sequence, dropout=pitch_sequence_pipeline_components.dropout_pitch_sequence, dataset=self.pitch_sequence_dataset, hidden_dim=256, embed_dim=128)
         
         # Initialize all encoders
         self.hitter_encoder = HitterEncoder(self.hitter_model_params)

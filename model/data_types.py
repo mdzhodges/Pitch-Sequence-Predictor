@@ -22,6 +22,8 @@ class ModelComponents(Generic[dataset_types]):
     learning_rate: float
     dropout: float
     dataset: dataset_types
+    hidden_dim: int
+    embed_dim: int
     
     
 @dataclass 
