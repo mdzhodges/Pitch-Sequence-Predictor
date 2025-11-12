@@ -17,7 +17,10 @@
 8. [Contributing](#contributing)
 9. [License](#license)
 10. [Matt's Rambles](#matts-rambles)
-
+    - [General Overview](#general-overview-)
+    - [Reasoning](#reasoning-)
+    - [Action Items](#action-items)
+    - [Concluding Thoughts](#concluding-thoughts)
 ---
 
 ## Overview
