@@ -10,9 +10,6 @@ from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEnc
 from model.pitcher_encoder.pitcher_encoder import PitcherEncoder
 from model.data_types import ModelComponents, TrainerComponents
 
-
-
-
 class PitchSequencePipeline:
     
     def __init__(self,
@@ -40,12 +37,11 @@ class PitchSequencePipeline:
         self.context_dataset = ContextDataset("data/context_2025_full.parquet")
         self.pitch_sequence_dataset = PitchSequenceDataset("data/pitch_sequence_2025.parquet", sample=self.sample)
         
+        # Initialize model_params 
         self.hitter_model_params = ModelComponents(learning_rate=learning_rate_hitter, dropout=dropout_hitter, dataset=self.hitter_dataset)
         self.pitcher_model_params = ModelComponents(learning_rate=learning_rate_pitcher, dropout=dropout_pitcher, dataset=self.pitcher_dataset)
         self.context_model_params = ModelComponents(learning_rate=learning_rate_context, dropout=dropout_context, dataset=self.context_dataset)
         self.pitch_seq_model_params = ModelComponents(learning_rate=learning_rate_pitch_sequence, dropout=dropout_pitch_sequence, dataset=self.pitch_sequence_dataset)
-
-
         
         # Initialize all encoders
         self.hitter_encoder = HitterEncoder(self.hitter_model_params)
