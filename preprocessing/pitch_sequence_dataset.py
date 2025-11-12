@@ -4,6 +4,7 @@ import torch
 from torch import Tensor
 from torch.utils.data import Dataset
 
+from controller.config import Config
 from utils.constants import Constants
 from utils.logger import Logger
 
@@ -20,12 +21,13 @@ class PitchSequenceDataset(Dataset):
         sample (int): Number of rows to load (for memory or debugging).
     """
 
-    def __init__(self, parquet_file_path: str, sample: int = 1000):
+    def __init__(self, sample: int = 1000):
 
         # ------------------------------------------------------------------
         # Load limited subset of dataset
         # ------------------------------------------------------------------
-        dataframe = pd.read_parquet(parquet_file_path)
+        self.config = Config()
+        dataframe = pd.read_parquet(self.config.PITCH_SEQUENCE_PARQUET_FILE_PATH)
         dataframe = dataframe.iloc[:sample]
 
         numeric_dataframe_column_list: list[str] = self._get_numeric_dataframe_columns_list(dataframe=dataframe)

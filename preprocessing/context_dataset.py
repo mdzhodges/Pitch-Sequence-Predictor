@@ -4,6 +4,7 @@ import torch
 from torch import Tensor
 from torch.utils.data import Dataset
 
+from controller.config import Config
 from utils.constants import Constants
 from utils.logger import Logger
 
@@ -15,9 +16,11 @@ class ContextDataset(Dataset):
     Includes 'events' so it can be embedded as a categorical feature.
     """
 
-    def __init__(self, parquet_file_path: str):
+    def __init__(self):
 
-        dataframe: pd.DataFrame = pd.read_parquet(parquet_file_path)
+        self.config = Config()
+
+        dataframe: pd.DataFrame = pd.read_parquet(self.config.CONTEXT_PARQUET_FILE_PATH)
 
         numeric_dataframe_column_list: list[str] = self._get_numeric_dataframe_columns_list(dataframe=dataframe)
         categorical_dataframe_column_list: list[str] = self._get_categorical_dataframe_columns_list(dataframe=dataframe)
