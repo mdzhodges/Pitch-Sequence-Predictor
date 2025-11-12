@@ -23,7 +23,8 @@ class ModelComponents(Generic[dataset_types]):
     dropout: float
     dataset: dataset_types
     
-@dataclass
+    
+@dataclass 
 class TrainerComponents:
     
     num_epochs: int

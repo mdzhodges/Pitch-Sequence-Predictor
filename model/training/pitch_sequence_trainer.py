@@ -1,6 +1,5 @@
-from model.pitch_sequence_trainer_components import PitchSequenceTrainerComponents
 from utils.logger import Logger
-from model.data_types import ModelComponents, TrainerComponents
+from model.trainer_type import TrainerComponents
 
 
 class PitchSequenceTrainer:
