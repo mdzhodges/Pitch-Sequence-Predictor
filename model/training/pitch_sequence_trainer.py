@@ -12,9 +12,9 @@ class PitchSequenceTrainer:
         print(self.batch_size)
 
         # encoders
-        self.hitter_encoder = model_params.hitter_encoder
-        self.pitcher_encoder =model_params.pitcher_encoder
-        self.context_encoder = model_params.context_encoder
+        self.hitter_embeds = model_params.hitter_embeds
+        self.pitcher_embeds =model_params.pitcher_embeds
+        self.context_embeds = model_params.context_embeds
         self.pitch_sequence_encoder = model_params.pitch_seq_encoder
 
         # Fusions

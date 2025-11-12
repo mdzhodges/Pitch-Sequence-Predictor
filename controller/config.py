@@ -8,15 +8,12 @@ class Config(BaseSettings):
 
     SAMPLE: int = 1000
     NUM_EPOCHS: int = 20
-    LR_HITTER: float = 1E-5
-    LR_PITCHER: float = 1E-5
-    LR_CONTEXT: float = 1E-5
     LR_PITCH_SEQ: float = 1E-5
-    DROPOUT_HITTER: float = .3
-    DROPOUT_PITCHER: float = .3
-    DROPOUT_CONTEXT: float = .3
     DROPOUT_PITCH_SEQ: float = .3
     BATCH_SIZE: int = 25
+    HITTER_PARQUET_FILE_PATH="data/hitters_2025_full.parquet"
+    PITCHER_PARQUET_FILE_PATH="data/pitchers_2025_full.parquet"
+    
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

@@ -1,6 +1,3 @@
-from model.context_encoder.context_encoder import ContextEncoder
-from model.hitter_encoder.hitter_encoder import HitterEncoder
-from model.pitcher_encoder.pitcher_encoder import PitcherEncoder
 from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
 from model.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
 from model.training.pitch_sequence_trainer import PitchSequenceTrainer
@@ -22,28 +19,22 @@ class PitchSequencePipeline:
         
         
         # Get data tensors
-        self.hitter_dataset = HitterDataset("data/hitters_2025_full.parquet")
-        self.pitcher_dataset = PitcherDataset("data/pitchers_2025_full.parquet")
+        self.hitter_dataset = HitterDataset()
+        self.pitcher_dataset = PitcherDataset()
         self.context_dataset = ContextDataset("data/context_2025_full.parquet")
         self.pitch_sequence_dataset = PitchSequenceDataset("data/pitch_sequence_2025.parquet", sample=self.sample)
         
         # Initialize model_params 
-        self.hitter_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_hitter, dropout=pitch_sequence_pipeline_components.dropout_hitter, dataset=self.hitter_dataset, hidden_dim=256, embed_dim=128)
-        self.pitcher_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitcher, dropout=pitch_sequence_pipeline_components.dropout_pitcher, dataset=self.pitcher_dataset, hidden_dim=256, embed_dim=128)
-        self.context_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_context, dropout=pitch_sequence_pipeline_components.dropout_context, dataset=self.context_dataset, hidden_dim=256, embed_dim=128)
         self.pitch_seq_model_params = ModelComponents(learning_rate=pitch_sequence_pipeline_components.learning_rate_pitch_sequence, dropout=pitch_sequence_pipeline_components.dropout_pitch_sequence, dataset=self.pitch_sequence_dataset, hidden_dim=256, embed_dim=128)
         
         # Initialize all encoders
-        self.hitter_encoder = HitterEncoder(self.hitter_model_params)
-        self.pitcher_encoder = PitcherEncoder(self.pitcher_model_params)
-        self.context_encoder = ContextEncoder(self.context_model_params)
         self.pitch_sequence_encoder = PitchSequenceEncoder(self.pitch_seq_model_params)
         
         # Custom Dataclass for the Trainer
         components = TrainerComponents(
-            hitter_encoder=self.hitter_encoder,
-            pitcher_encoder=self.pitcher_encoder,
-            context_encoder=self.context_encoder,
+            hitter_embeds=self.hitter_dataset,
+            pitcher_embeds=self.pitcher_dataset,
+            context_embeds=self.context_dataset,
             pitch_seq_encoder=self.pitch_sequence_encoder,
             num_epochs=pitch_sequence_pipeline_components.num_epochs,
             batch_size=pitch_sequence_pipeline_components.batch_size
