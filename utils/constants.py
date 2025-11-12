@@ -4,8 +4,22 @@ class Constants:
     COLOR_ERROR: str = "\033[91m"
     COLOR_RESET: str = "\033[0m"
 
-    START_DATE_STR:str = "2025-03-17"
-    END_DATE_STR:str = "2025-09-28"
+    START_DATE_STR: str = "2025-03-17"
+    END_DATE_STR: str = "2025-09-28"
+
+    FEATURE_EXCLUSION_SET: set[str] = {"IDfg", "Season", "Team", "Age"}
+
+    COLUMN_EXCLUSION_SET: set[str] = {
+        "game_date",
+        "description",
+        "des",
+        "umpire",
+        "sv_id",
+        "pitcher_name",
+        "batter_name",
+        "home_team",
+        "away_team",
+    }
 
     PITCH_SEQUENCE_COLUMNS_LIST: list[str] = [
         "game_date", "game_pk", "at_bat_number", "pitch_number",
@@ -17,7 +31,7 @@ class Constants:
         "events"
     ]
 
-    CONTEXT_COLUMNS_LIST:list[str] = [
+    CONTEXT_COLUMNS_LIST: list[str] = [
         'age_bat', 'age_bat_legacy', 'age_pit', 'age_pit_legacy',
         'api_break_x_arm', 'api_break_x_batter_in', 'api_break_z_with_gravity',
         'arm_angle', 'at_bat_number', 'attack_angle', 'attack_direction',

@@ -1,7 +1,4 @@
-from model.hitter_encoder.hitter_encoder import HitterEncoder
-from model.pitcher_encoder.pitcher_encoder import PitcherEncoder
-from model.context_encoder.context_encoder import ContextEncoder
-from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
+from model.pitch_sequence_trainer_components import PitchSequenceTrainerComponents
 from utils.logger import Logger
 from model.data_types import ModelComponents, TrainerComponents
 
@@ -25,7 +22,6 @@ class PitchSequenceTrainer:
 
         # Logger
         self.logger = Logger(self.__class__.__name__)
-        
 
     def train(self):
         pass

@@ -2,7 +2,6 @@ import asyncio
 
 from controller.cli_arguments import CLIArguments
 from controller.controller import Controller
-from data_collection.context_collection import ContextDataCollection
 from utils.logger import Logger
 
 
