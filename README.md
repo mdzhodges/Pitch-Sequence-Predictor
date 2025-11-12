@@ -58,7 +58,7 @@ DROPOUT_PITCH_SEQ=.3
 HITTER_PARQUET_FILE_PATH="data/hitters_2025_full.parquet"
 CONTEXT_PARQUET_FILE_PATH="data/context_2025_full.parquet"
 PITCHER_PARQUET_FILE_PATH="data/pitchers_2025_full.parquet"
-PITCH_SEQUENCE_PARQUET_FILE_PATH"data/pitch_sequence_2025.parquet"
+PITCH_SEQUENCE_PARQUET_FILE_PATH"=data/pitch_sequence_2025.parquet"
 ```
 
 
