@@ -3,47 +3,34 @@ from model.pitcher_encoder.pitcher_encoder import PitcherEncoder
 from model.context_encoder.context_encoder import ContextEncoder
 from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
 from utils.logger import Logger
+from model.model_components import ModelComponents
 
 
 class PitchSequenceTrainer:
     
-    def __init__(self, 
-                 hitter_encoder: HitterEncoder, 
-                 pitcher_encoder: PitcherEncoder,
-                 context_encoder: ContextEncoder,
-                 pitch_sequence_encoder: PitchSequenceEncoder,
-                 num_epochs: int = 10, 
-                 sample: int = 1000,
-                 dropout_hitter: float = .3, 
-                 dropout_pitcher: float = .3,
-                 dropout_context: float = .3,
-                 dropout_pitch_sequence: float = .3,
-                 learning_rate_hitter: float = 1e-5,
-                 learning_rate_pitcher: float = 1e-5,
-                 learning_rate_context: float = 1e-5,
-                 learning_rate_pitch_sequence: float = 1e-5):
+    def __init__(self, model_params: ModelComponents):
         
         # dropout for each encoder
-        self.dropout_hitter = dropout_hitter
-        self.dropout_pitcher = dropout_pitcher
-        self.dropout_context = dropout_context
-        self.dropout_pitch_sequence = dropout_pitch_sequence
+        self.dropout_hitter = model_params.dropout_hitter
+        self.dropout_pitcher = model_params.dropout_pitcher
+        self.dropout_context = model_params.dropout_context
+        self.dropout_pitch_sequence = model_params.dropout_pitch_sequence
 
         # learning rate (will be optimized by AdamW)
-        self.learning_rate_hitter = learning_rate_hitter
-        self.learning_rate_pitcher = learning_rate_pitcher
-        self.learning_rate_context = learning_rate_context
-        self.learning_rate_pitch_sequence = learning_rate_pitch_sequence
+        self.learning_rate_hitter = model_params.learning_rate_hitter
+        self.learning_rate_pitcher = model_params.learning_rate_pitcher
+        self.learning_rate_context = model_params.learning_rate_context
+        self.learning_rate_pitch_sequence = model_params.learning_rate_pitch_sequence
 
         # Various training needs
-        self.num_epochs = num_epochs
-        self.sample = sample
+        self.num_epochs = model_params.num_epochs
+        self.sample = model_params.sample
 
         # encoders
-        self.hitter_encoder = hitter_encoder
-        self.pitcher_encoder = pitcher_encoder
-        self.context_encoder = context_encoder
-        self.pitch_sequence_encoder = pitch_sequence_encoder
+        self.hitter_encoder = model_params.hitter_encoder
+        self.pitcher_encoder =model_params.pitcher_encoder
+        self.context_encoder = model_params.context_encoder
+        self.pitch_sequence_encoder = model_params.pitch_sequence_encoder
 
         # Fusions
         self.hitter_pitcher_fusion = None
@@ -51,28 +38,7 @@ class PitchSequenceTrainer:
 
         # Logger
         self.logger = Logger(self.__class__.__name__)
-
-        # Detailed initialization log
-        self.logger.info(
-            f"\n[Trainer Initialized]\n"
-            f"Epochs: {self.num_epochs}\n"
-            f"Sample Size: {self.sample}\n"
-            f"\n[Dropout Rates]\n"
-            f"  Hitter: {self.dropout_hitter}\n"
-            f"  Pitcher: {self.dropout_pitcher}\n"
-            f"  Context: {self.dropout_context}\n"
-            f"  Pitch Sequence: {self.dropout_pitch_sequence}\n"
-            f"\n[Learning Rates]\n"
-            f"  Hitter: {self.learning_rate_hitter}\n"
-            f"  Pitcher: {self.learning_rate_pitcher}\n"
-            f"  Context: {self.learning_rate_context}\n"
-            f"  Pitch Sequence: {self.learning_rate_pitch_sequence}\n"
-            f"\n[Encoders]\n"
-            f"  Hitter Encoder: {'Loaded' if self.hitter_encoder else 'None'}\n"
-            f"  Pitcher Encoder: {'Loaded' if self.pitcher_encoder else 'None'}\n"
-            f"  Context Encoder: {'Loaded' if self.context_encoder else 'None'}\n"
-            f"  Pitch Sequence Encoder: {'Loaded' if self.pitch_sequence_encoder else 'None'}"
-        )
+        
 
     def train(self):
         pass

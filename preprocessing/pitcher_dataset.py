@@ -46,7 +46,6 @@ class PitcherDataset(Dataset):
 
         # Logger
         self.logger = Logger(self.__class__.__name__)
-        self.logger.info("Pitcher Dataset Populated to Tensors")
         
     def __len__(self):
         return len(self.X)

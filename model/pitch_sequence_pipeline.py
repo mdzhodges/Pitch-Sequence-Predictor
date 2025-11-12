@@ -8,6 +8,7 @@ from model.hitter_encoder.hitter_encoder import HitterEncoder
 from model.context_encoder.context_encoder import ContextEncoder
 from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
 from model.pitcher_encoder.pitcher_encoder import PitcherEncoder
+from model.model_components import ModelComponents
 
 
 
@@ -26,6 +27,9 @@ class PitchSequencePipeline:
             learning_rate_pitch_sequence: float = 1e-5,
             sample: int = 1000,
             ):
+        
+        self.logger = Logger(self.__class__.__name__)
+        
         # Get data tensors
         self.hitter_dataset = HitterDataset("data/hitters_2025_full.parquet")
         self.pitcher_dataset = PitcherDataset("data/pitchers_2025_full.parquet")
@@ -34,20 +38,18 @@ class PitchSequencePipeline:
         
         # Various params needed
         self.sample = sample
-        
-        
         # Initialize all encoders
         self.hitter_encoder = HitterEncoder(self.hitter_dataset)
         self.pitcher_encoder = PitcherEncoder(self.pitcher_dataset)
         self.context_encoder = ContextEncoder(self.context_dataset)
         self.pitch_sequence_encoder = PitchSequenceEncoder(self.pitch_sequence_dataset)
         
-        # Initialize trainer
-        self.trainer = PitchSequenceTrainer(
-            hitter_encoder=self.hitter_encoder,
-            pitcher_encoder = self.pitcher_encoder,
-            context_encoder = self.context_encoder,
-            pitch_sequence_encoder = self.pitch_sequence_encoder,
+        # Custom Dataclass for the Trainer
+        components = ModelComponents(
+            hitter_encoder=HitterEncoder(self.hitter_dataset),
+            pitcher_encoder=PitcherEncoder(self.pitcher_dataset),
+            context_encoder=ContextEncoder(self.context_dataset),
+            pitch_sequence_encoder=PitchSequenceEncoder(self.pitch_sequence_dataset),
             num_epochs=num_epochs,
             dropout_hitter=dropout_hitter,
             dropout_pitcher=dropout_pitcher,
@@ -57,9 +59,13 @@ class PitchSequencePipeline:
             learning_rate_pitcher=learning_rate_pitcher,
             learning_rate_context=learning_rate_context,
             learning_rate_pitch_sequence=learning_rate_pitch_sequence,
-            sample=sample
+            sample=sample,
         )
+
+        # Initialize trainer
+        self.trainer = PitchSequenceTrainer(model_params=components)
         
+        self.logger.info("Pipeline Initialized")
         
     def execute(self):
         

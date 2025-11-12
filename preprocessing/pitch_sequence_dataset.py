@@ -76,14 +76,7 @@ class PitchSequenceDataset(Dataset):
             self.cat_maps[col] = mapping
 
         self.X_categorical = cat_tensors
-
-        # ------------------------------------------------------------------
-        # Logger
-        # ------------------------------------------------------------------
-        self.logger.info(
-            f"Pitch Sequence Dataset Populated — {len(self)} rows, "
-        )
-
+        
     # ----------------------------------------------------------------------
     def __len__(self):
         return len(self.X_numeric)

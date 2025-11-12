@@ -95,10 +95,6 @@ class ContextDataset(Dataset):
         # Logger
         # ------------------------------------------------------------
         self.logger = Logger(self.__class__.__name__)
-        self.logger.info(
-            f"Context Dataset Populated — {len(self)} rows, "
-        )
-
     # ------------------------------------------------------------
     def __len__(self):
         return len(self.X_numeric)
