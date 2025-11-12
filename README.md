@@ -4,16 +4,17 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)  
-2. [Project Structure](#project-structure)  
+1. [Overview](#overview)
+2. [Project Structure](#project-structure)
 3. [Installation](#installation)
-   - [Dependency Management - Poetry](#dependency-management---poetry)
-   - [Environment Variables](#environment-variables)
-4. [Usage](#usage)  
-5. [Model Training](#model-training)  
-6. [Evaluation](#evaluation)  
-7. [Results](#results)  
-8. [Contributing](#contributing)  
+    - [Dependency Management - Poetry](#dependency-management---poetry)
+    - [Environment Variables](#environment-variables)
+    - [Data Generation](#data-generation)
+4. [Usage](#usage)
+5. [Model Training](#model-training)
+6. [Evaluation](#evaluation)
+7. [Results](#results)
+8. [Contributing](#contributing)
 9. [License](#license)
 
 ---
@@ -34,7 +35,6 @@ It leverages the **pybaseball** library for data retrieval and **PyTorch** for m
 ## Installation
 
 **ADD-CONTENT**
-
 
 ### Dependency Management - Poetry
 
@@ -61,6 +61,9 @@ PITCHER_PARQUET_FILE_PATH="data/pitchers_2025_full.parquet"
 PITCH_SEQUENCE_PARQUET_FILE_PATH"=data/pitch_sequence_2025.parquet"
 ```
 
+### Data Generation
+
+**ADD-CONTENT**
 
 ---
 
