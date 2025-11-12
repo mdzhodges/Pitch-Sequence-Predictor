@@ -1,15 +1,19 @@
+from pathlib import Path
+
 import pandas as pd
 import torch
 from torch import Tensor
 from torch.utils.data import Dataset
 
+from controller.config import Config
 from utils.constants import Constants
 from utils.logger import Logger
 
 
 class PitcherDataset(Dataset):
-    def __init__(self, parquet_file_path: str):
-        dataframe: pd.DataFrame = pd.read_parquet(parquet_file_path)
+    def __init__(self):
+        self.config: Config = Config()
+        dataframe: pd.DataFrame = pd.read_parquet(self.config.PITCHER_PARQUET_FILE_PATH)
 
         numeric_dataframe_column_list: list[str] = self._get_numeric_dataframe_columns_list(dataframe=dataframe)
 
