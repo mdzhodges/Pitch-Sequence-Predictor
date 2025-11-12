@@ -16,6 +16,7 @@
 7. [Results](#results)
 8. [Contributing](#contributing)
 9. [License](#license)
+10. [Matt's Rambles](#matts-rambles)
 
 ---
 
@@ -106,4 +107,27 @@ PITCH_SEQUENCE_PARQUET_FILE_PATH"=data/pitch_sequence_2025.parquet"
 
 ## Matt's Rambles
 
-So, I believe the best thing for us to do is no longer use pitch_sequence_2025.parquet. THis is because every thing is in that is in the context parquet file too, so no need to overlap. Currently we have the hitter and pitcher parquet files too. What I think we should do is at preprocessing, we taking those ID"s (fangraph IDs) from the hitter and pitcher parquet, then move that information (we are gonna have to move the mapping to a MLBAM ID's (there is a statcast function for this))to the context file THEN we embed everything, categorical or not. That will allow us to use the "matchup" between hitter and pitcher. also we need to find a way to create a "Next_Pitch" field in the context file so we can have a target to classify. So essentially we need to completely change preprocessing into one huge (hand gesture) file. 
+#### General Overview: 
+
+I believe the best thing for us to do is no longer use **pitch_sequence_2025.parquet**. 
+
+#### Reasoning: 
+
+This is because every thing in **pitch_sequence_2025.parquet** is in the context parquet file as well, so no need to overlap. 
+
+Currently, we have the **hitters_2025_full.parquet** and **pitchers_2025_full.parquet** files as well. 
+
+### Action Items:
+
+During pre-processing we should complete the following:
+
+1. Take the FanGraph IDs from both the **hitters_2025_full.parquet** and **pitchers_2025_full.parquet** files and move the information.
+   - We are going to have to move the mapping to an MLBAM ID's (there is a statcast function for this) to the context file
+   - Finally, we embed all the relevant information whether it is a categorical variable or not.
+   - That will allow us to create a **"matchup"** between a given hitter and pitcher. 
+
+2. We need to find a way to create a "Next_Pitch" field in the context file so we can have a target to classify. 
+
+### Concluding Thoughts:
+
+Essentially, we need to completely change preprocessing into one huge (hand gesture) file. 
