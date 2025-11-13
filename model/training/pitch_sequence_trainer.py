@@ -1,17 +1,21 @@
-from model.custom_types.trainer_type import TrainerComponents
-from torch.utils.data import Dataset, DataLoader, Subset
-from utils.logger import Logger
-from tqdm import tqdm
-import torch
 import random
+
+import torch
+from torch.utils.data import DataLoader, Subset
+from tqdm import tqdm
+
+from model.custom_types.trainer_type import TrainerComponents
+from utils.logger import Logger
 
 
 class PitchSequenceTrainer:
 
     def __init__(self, model_params: TrainerComponents):
-
         self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu')
+            'cuda' if torch.cuda.is_available()
+            else 'mps' if torch.backends.mps.is_available()
+            else 'cpu'
+        )
 
         # Various training needs
         self.num_epochs = model_params.num_epochs
@@ -20,7 +24,7 @@ class PitchSequenceTrainer:
         # Initiate dataset and encoder
         self.dataset = model_params.dataset
         self.encoder = model_params.pitch_seq_encoder
-        
+
         # send to device
         self.encoder = self.encoder.to(
             self.device)
@@ -28,7 +32,7 @@ class PitchSequenceTrainer:
         # Get the three loaders for train/val/test
         self.train_loader, self.val_loader, self.test_loader = self.get_loaders(
             val_split=.1, test_split=.1)
-        
+
         # logger
         self.logger = Logger(self.__class__.__name__)
 
