@@ -9,20 +9,21 @@ class Controller:
 
     def __init__(self, parsed_args) -> None:
         self.parsed_args = parsed_args
-        
-        #context_data_collection: ContextDataCollection = ContextDataCollection()
 
-        #context_data_collection.export_stat_cast_dataframe()
-        #context_data_collection.export_dataframe_to_parquet_file()
-        
-        #preprocess_unified()
-        
+        # context_data_collection: ContextDataCollection = ContextDataCollection()
+
+        # context_data_collection.export_stat_cast_dataframe()
+        # context_data_collection.export_dataframe_to_parquet_file()
+
+        # preprocess_unified()
+
         components = PitchSequencePipelineComponents(
             num_epochs=parsed_args.num_epochs,
-            learning_rate_pitch_sequence= parsed_args.lr_pitch_seq,
+            learning_rate_pitch_sequence=parsed_args.lr_pitch_seq,
             dropout_pitch_sequence=parsed_args.dropout_pitch_seq,
             sample=parsed_args.sample,
             batch_size=parsed_args.batch_size
         )
-                
-        PitchSequencePipeline(pitch_sequence_pipeline_components=components).execute()
+
+        PitchSequencePipeline(
+            pitch_sequence_pipeline_components=components).execute()

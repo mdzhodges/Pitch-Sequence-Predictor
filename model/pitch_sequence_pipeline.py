@@ -12,30 +12,32 @@ class PitchSequencePipeline:
     def __init__(self, pitch_sequence_pipeline_components: PitchSequencePipelineComponents):
         # Sample for the pitch sequence dataset
         self.sample = pitch_sequence_pipeline_components.sample
-        
+
+        # Logger
         self.logger = Logger(self.__class__.__name__)
 
+        # Check params of trainer, model, and sample
         self.dataset = FusionDataset(sample=self.sample)
-        
-        
-        
-        # Initialize model_params 
+
+        # Initialize model_params
         self.pitch_seq_model_params = ModelComponents(
             learning_rate=pitch_sequence_pipeline_components.learning_rate_pitch_sequence,
             dropout=pitch_sequence_pipeline_components.dropout_pitch_sequence, dataset=self.dataset,
             hidden_dim=256, embed_dim=128)
-        
-        
+
+        # Log
+        self.logger.info(f"Fusion Dataset Sample: {self.sample}")
         self.logger.info("Encoder Initialized with the Params: \n"
-            f"  learning_rate: {self.pitch_seq_model_params.learning_rate}\n"
-            f"  dropout: {self.pitch_seq_model_params.dropout}\n"
-            f"  hidden_dim: {self.pitch_seq_model_params.hidden_dim}\n"
-            f"  embed_dim: {self.pitch_seq_model_params.embed_dim}\n"
-            f"  dataset: {type(self.pitch_seq_model_params.dataset).__name__}"
-        )
+                         f"  learning_rate: {self.pitch_seq_model_params.learning_rate}\n"
+                         f"  dropout: {self.pitch_seq_model_params.dropout}\n"
+                         f"  hidden_dim: {self.pitch_seq_model_params.hidden_dim}\n"
+                         f"  embed_dim: {self.pitch_seq_model_params.embed_dim}\n"
+                         f"  dataset: {type(self.pitch_seq_model_params.dataset).__name__}"
+                         )
 
         # Initialize all encoders
-        self.pitch_sequence_encoder = PitchSequenceEncoder(self.pitch_seq_model_params)
+        self.pitch_sequence_encoder = PitchSequenceEncoder(
+            self.pitch_seq_model_params)
 
         # Custom Dataclass for the Trainer
         components = TrainerComponents(
@@ -44,16 +46,18 @@ class PitchSequencePipeline:
             num_epochs=pitch_sequence_pipeline_components.num_epochs,
             batch_size=pitch_sequence_pipeline_components.batch_size
         )
-        
+
+        # Log
         self.logger.info("Trainer Initialized with the Params: \n"
-            f"  num_epochs: {components.num_epochs}\n"
-            f"  batch_size: {components.batch_size}\n"
-            f"  dataset: {type(components.dataset).__name__}\n"
-            f"  pitch_seq_encoder: {type(components.pitch_seq_encoder).__name__}"
-        )
+                         f"  num_epochs: {components.num_epochs}\n"
+                         f"  batch_size: {components.batch_size}\n"
+                         f"  dataset: {type(components.dataset).__name__}\n"
+                         f"  pitch_seq_encoder: {type(components.pitch_seq_encoder).__name__}"
+                         )
         # Initialize trainer
         self.trainer = PitchSequenceTrainer(components)
-        
+
+        # We Good message
         self.logger.info("Pipeline is chilling, initialized")
 
     def execute(self):

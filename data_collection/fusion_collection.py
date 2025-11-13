@@ -3,6 +3,7 @@ from pybaseball import playerid_reverse_lookup
 from controller.config import Config
 from utils.logger import Logger
 
+
 def preprocess_unified(debug: bool = True):
     """
     Creates a unified dataset combining context, hitter, and pitcher information.
@@ -22,9 +23,12 @@ def preprocess_unified(debug: bool = True):
     # ------------------------------------------------------------
     # 2. Map FanGraphs -> MLBAM IDs
     # ------------------------------------------------------------
-    fg_ids = pd.concat([hitter_df["IDfg"], pitcher_df["IDfg"]]).dropna().unique().tolist()
-    id_map = playerid_reverse_lookup(fg_ids, key_type="fangraphs")[["key_fangraphs", "key_mlbam"]].dropna()
-    id_map = id_map.rename(columns={"key_fangraphs": "IDfg", "key_mlbam": "mlbam"})
+    fg_ids = pd.concat([hitter_df["IDfg"], pitcher_df["IDfg"]]
+                       ).dropna().unique().tolist()
+    id_map = playerid_reverse_lookup(fg_ids, key_type="fangraphs")[
+        ["key_fangraphs", "key_mlbam"]].dropna()
+    id_map = id_map.rename(
+        columns={"key_fangraphs": "IDfg", "key_mlbam": "mlbam"})
 
     hitter_df = hitter_df.merge(id_map, on="IDfg", how="left")
     pitcher_df = pitcher_df.merge(id_map, on="IDfg", how="left")
@@ -33,8 +37,10 @@ def preprocess_unified(debug: bool = True):
     # 3. Identify sequencing columns
     # ------------------------------------------------------------
     possible_ab_cols = [c for c in context_df.columns if "at_bat" in c.lower()]
-    possible_pitch_cols = [c for c in context_df.columns if "pitch_number" in c.lower() or "pitch_no" in c.lower()]
-    possible_game_cols = [c for c in context_df.columns if "game_pk" in c.lower() or "game_id" in c.lower()]
+    possible_pitch_cols = [
+        c for c in context_df.columns if "pitch_number" in c.lower() or "pitch_no" in c.lower()]
+    possible_game_cols = [
+        c for c in context_df.columns if "game_pk" in c.lower() or "game_id" in c.lower()]
 
     if not possible_ab_cols or not possible_pitch_cols:
         raise KeyError(
@@ -48,7 +54,8 @@ def preprocess_unified(debug: bool = True):
     # ------------------------------------------------------------
     # 4. Sort dataset by pitch order
     # ------------------------------------------------------------
-    sort_cols = [col for col in [game_col, ab_col, pitch_col] if col is not None]
+    sort_cols = [col for col in [
+        game_col, ab_col, pitch_col] if col is not None]
     context_df = context_df.sort_values(sort_cols).reset_index(drop=True)
 
     # ------------------------------------------------------------
@@ -59,7 +66,8 @@ def preprocess_unified(debug: bool = True):
         context_df.groupby(group_cols)["pitch_type"].shift(-1)
     )
 
-    context_df = context_df.dropna(subset=["next_pitch_type"]).reset_index(drop=True)
+    context_df = context_df.dropna(
+        subset=["next_pitch_type"]).reset_index(drop=True)
     # ------------------------------------------------------------
     # 6. Encode pitch type and next pitch type
     # ------------------------------------------------------------
@@ -104,11 +112,10 @@ def preprocess_unified(debug: bool = True):
     # ------------------------------------------------------------
     save_path = "data/unified_context.parquet"
     context_df.to_parquet(save_path, index=False)
-    
-    logger = Logger("Generation of Fusion")
-    
-    logger.info(f"Generated data of size: {context_df.shape} <= Should be (732976, 820)")
-    
 
+    logger = Logger("Generation of Fusion")
+
+    logger.info(
+        f"Generated data of size: {context_df.shape} <= Should be (732976, 820)")
 
     return context_df

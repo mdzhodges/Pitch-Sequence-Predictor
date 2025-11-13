@@ -3,10 +3,9 @@ from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEnc
 from dataclasses import dataclass
 
 
-
-@dataclass 
+@dataclass
 class TrainerComponents:
-    
+
     num_epochs: int
     dataset: FusionDataset
     pitch_seq_encoder: PitchSequenceEncoder

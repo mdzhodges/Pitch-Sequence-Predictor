@@ -33,7 +33,8 @@ class FusionDataset(Dataset):
         dataframe: pd.DataFrame = pd.read_parquet(parquet_path)
 
         if sample and sample < len(dataframe):
-            dataframe = dataframe.sample(n=sample, random_state=42).reset_index(drop=True)
+            dataframe = dataframe.sample(
+                n=sample, random_state=42).reset_index(drop=True)
 
         # ------------------------------------------------------------
         # 2. Identify numeric + categorical columns robustly
@@ -46,7 +47,8 @@ class FusionDataset(Dataset):
             if c in exclude:
                 continue
             try:
-                pd.to_numeric(dataframe[c].dropna().sample(n=min(500, len(dataframe))), errors="raise")
+                pd.to_numeric(dataframe[c].dropna().sample(
+                    n=min(500, len(dataframe))), errors="raise")
                 numeric_cols.append(c)
             except Exception:
                 # Skip if conversion fails (mixed or string column)
@@ -58,7 +60,8 @@ class FusionDataset(Dataset):
         ]
 
         if not numeric_cols and not categorical_cols:
-            raise ValueError("No usable columns found in unified context parquet.")
+            raise ValueError(
+                "No usable columns found in unified context parquet.")
 
         self.numeric_cols = numeric_cols
         self.categorical_cols = categorical_cols
@@ -66,7 +69,8 @@ class FusionDataset(Dataset):
         # ------------------------------------------------------------
         # 3. Normalize numeric features safely
         # ------------------------------------------------------------
-        numeric_df = dataframe[numeric_cols].apply(pd.to_numeric, errors="coerce")
+        numeric_df = dataframe[numeric_cols].apply(
+            pd.to_numeric, errors="coerce")
         self.mean = numeric_df.mean()
         self.std = numeric_df.std().replace(0, 1)
         normalized = (numeric_df - self.mean) / self.std
@@ -96,7 +100,8 @@ class FusionDataset(Dataset):
         # 5. Target tensor (next pitch classification)
         # ------------------------------------------------------------
         if "next_pitch_idx" not in dataframe.columns:
-            raise ValueError("'next_pitch_idx' missing in unified context parquet.")
+            raise ValueError(
+                "'next_pitch_idx' missing in unified context parquet.")
 
         labels = dataframe["next_pitch_idx"].fillna(-1).astype(np.int64)
         self.y_labels = torch.tensor(labels.values, dtype=torch.long)
@@ -120,7 +125,8 @@ class FusionDataset(Dataset):
 
     def __getitem__(self, idx: int):
         numeric = self.x_numeric[idx]
-        categorical = {col: tensor[idx] for col, tensor in self.x_categorical.items()}
+        categorical = {col: tensor[idx]
+                       for col, tensor in self.x_categorical.items()}
         label = self.y_labels[idx]
         return {"numeric": numeric, "categorical": categorical, "label": label}
 
@@ -134,7 +140,8 @@ class FusionDataset(Dataset):
     def get_example(self, idx: int = 0):
         """Inspect decoded values for a single row (debug)."""
         cat_example = {
-            col: list(vocab.keys())[list(vocab.values()).index(int(self.x_categorical[col][idx]))]
+            col: list(vocab.keys())[list(vocab.values()).index(
+                int(self.x_categorical[col][idx]))]
             for col, vocab in self.vocab_maps.items()
         }
         return {

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from preprocessing.fusion_dataset import FusionDataset
 
+
 @dataclass
 class ModelComponents():
     """Represents the core components required to configure a model.
@@ -17,4 +18,3 @@ class ModelComponents():
     dataset: FusionDataset
     hidden_dim: int
     embed_dim: int
-    

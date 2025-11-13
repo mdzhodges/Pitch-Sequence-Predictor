@@ -10,7 +10,6 @@ async def main() -> int:
 
         controller: Controller = Controller(parsed_args=args.parse())
 
-
     except Exception as e:
         raise Exception(f"Error Message: {e}") from e
 
