@@ -35,7 +35,9 @@ class PitchSequenceTrainer:
     def train(self):
         for _ in tqdm(range(self.num_epochs)):
             self.encoder.train()
-
+            for batch in self.train_loader:
+                self.encoder(**batch)
+                
     def get_indices_for_split(self, val_split: float = .1, test_split: float = .1):
         """Return train, val, test index lists based on your split ratios."""
         total_length = len(self.dataset)
