@@ -27,20 +27,14 @@ class PitchSequencePipeline:
 
         # Log
         self.logger.info(f"Fusion Dataset Sample: {self.sample}")
-        self.logger.info("Encoder Initialized with the Params: \n"
-                         f"  learning_rate: {self.pitch_seq_model_params.learning_rate}\n"
-                         f"  dropout: {self.pitch_seq_model_params.dropout}\n"
-                         f"  hidden_dim: {self.pitch_seq_model_params.hidden_dim}\n"
-                         f"  embed_dim: {self.pitch_seq_model_params.embed_dim}\n"
-                         f"  dataset: {type(self.pitch_seq_model_params.dataset).__name__}"
-                         )
+        self._display_model_parameters()
 
         # Initialize all encoders
         self.pitch_sequence_encoder = PitchSequenceEncoder(
             self.pitch_seq_model_params)
 
         # Custom Dataclass for the Trainer
-        components = TrainerComponents(
+        trainer_components: TrainerComponents = TrainerComponents(
             dataset=self.dataset,
             pitch_seq_encoder=self.pitch_sequence_encoder,
             num_epochs=pitch_sequence_pipeline_components.num_epochs,
@@ -48,17 +42,29 @@ class PitchSequencePipeline:
         )
 
         # Log
-        self.logger.info("Trainer Initialized with the Params: \n"
-                         f"  num_epochs: {components.num_epochs}\n"
-                         f"  batch_size: {components.batch_size}\n"
-                         f"  dataset: {type(components.dataset).__name__}\n"
-                         f"  pitch_seq_encoder: {type(components.pitch_seq_encoder).__name__}"
-                         )
+        self._display_trainer_params(trainer_components=trainer_components)
         # Initialize trainer
-        self.trainer = PitchSequenceTrainer(components)
+        self.trainer = PitchSequenceTrainer(model_params=trainer_components)
 
         # We Good message
         self.logger.info("Pipeline is chilling, initialized")
+
+    def _display_model_parameters(self) -> None:
+        self.logger.info("Encoder Initialized with the Params: \n"
+                         f"  Learning Rate: {self.pitch_seq_model_params.learning_rate}\n"
+                         f"  Drop Out Rate: {self.pitch_seq_model_params.dropout}\n"
+                         f"  Hidden Dimensions: {self.pitch_seq_model_params.hidden_dim}\n"
+                         f"  Embedded Dimensions: {self.pitch_seq_model_params.embed_dim}\n"
+                         f"  Dataset Name: {type(self.pitch_seq_model_params.dataset).__name__}"
+                         )
+
+    def _display_trainer_params(self, trainer_components: TrainerComponents) -> None:
+        self.logger.info("Trainer Initialized with the Params: \n"
+                         f"  Num Epochs: {trainer_components.num_epochs}\n"
+                         f"  Batch Size: {trainer_components.batch_size}\n"
+                         f"  Dataset Name: {type(trainer_components.dataset).__name__}\n"
+                         f"  Pitch Sequence Encoder Name: {type(trainer_components.pitch_seq_encoder).__name__}"
+                         )
 
     def execute(self):
         history = self.trainer.train()
