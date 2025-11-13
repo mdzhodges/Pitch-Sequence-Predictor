@@ -8,7 +8,7 @@ class PitchSequenceTrainer:
 
     def __init__(self, model_params: TrainerComponents):
 
-        device = torch.device(
+        self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
 
         # Various training needs
@@ -16,7 +16,10 @@ class PitchSequenceTrainer:
         self.batch_size = model_params.batch_size
 
         self.dataset = model_params.dataset
-        self.pitch_sequence_encoder = model_params.pitch_seq_encoder
+        self.pitch_sequence_encoder = model_params.pitch_seq_encoder    
+        
+        self.pitch_sequence_encoder = self.pitch_sequence_encoder.to(
+            self.device)
 
         # Get the three loaders for train/val/test
         self.train_loader, self.val_loader, self.test_loader = self.get_loaders(
