@@ -106,21 +106,3 @@ class PitchSequenceTrainer:
         )
 
         return train_loader, val_loader, test_loader
-
-    def move_to_device(self,batch, device: torch.device) -> Dict[str, Any]:
-        """
-        Recursively move tensors in the batch onto the specified device.
-        """
-        out: Dict[str, Any] = {}
-        for key, value in batch.items():
-            if isinstance(value, torch.Tensor):
-                out[key] = value.to(device, non_blocking=True)
-            elif isinstance(value, dict):
-                out[key] = {
-                    inner_key: inner_val.to(device, non_blocking=True) if isinstance(
-                        inner_val, torch.Tensor) else inner_val
-                    for inner_key, inner_val in value.items()
-                }
-            else:
-                out[key] = value
-        return out
