@@ -1,28 +1,33 @@
-from controller.cli_arguments import CLIArguments
-from model.pitch_sequence_pipeline import PitchSequencePipeline
-from model.custom_types.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
 from data_collection.context_data_collection import ContextDataCollection
-from data_collection.fusion_collection import preprocess_unified
+from data_collection.fusion_collection import FusionCollection
+from model.custom_types.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
+from model.pitch_sequence_pipeline import PitchSequencePipeline
+from utils.logger import Logger
 
 
 class Controller:
 
     def __init__(self, parsed_args) -> None:
         self.parsed_args = parsed_args
+        self.logger = Logger(self.__class__.__name__)
 
-        # context_data_collection: ContextDataCollection = ContextDataCollection()
+    def export_context_dataset_to_parquet_file(self) -> None:
+        context_data_collection: ContextDataCollection = ContextDataCollection()
 
-        # context_data_collection.export_stat_cast_dataframe()
-        # context_data_collection.export_dataframe_to_parquet_file()
+        context_data_collection.export_stat_cast_dataframe()
+        context_data_collection.export_dataframe_to_parquet_file()
 
-        # preprocess_unified()
+        fusion_collection: FusionCollection = FusionCollection()
 
+        fusion_collection.preprocess_unified()
+
+    def execute_sequence_pipeline(self) -> None:
         components = PitchSequencePipelineComponents(
-            num_epochs=parsed_args.num_epochs,
-            learning_rate_pitch_sequence=parsed_args.lr_pitch_seq,
-            dropout_pitch_sequence=parsed_args.dropout_pitch_seq,
-            sample=parsed_args.sample,
-            batch_size=parsed_args.batch_size
+            num_epochs=self.parsed_args.num_epochs,
+            learning_rate_pitch_sequence=self.parsed_args.lr_pitch_seq,
+            dropout_pitch_sequence=self.parsed_args.dropout_pitch_seq,
+            sample=self.parsed_args.sample,
+            batch_size=self.parsed_args.batch_size
         )
 
         PitchSequencePipeline(
