@@ -57,3 +57,26 @@ class Constants:
         'strikes', 'sv_id', 'swing_length', 'swing_path_tilt', 'sz_bot', 'sz_top',
         'type', 'vx0', 'vy0', 'vz0', 'woba_denom', 'woba_value', 'zone'
     ]
+    
+    PITCH_TYPE_TO_IDX = {
+            "CH": 0,
+            "CS": 1,
+            "CU": 2,
+            "EP": 3,
+            "FA": 4,
+            "FC": 5,
+            "FF": 6,
+            "FO": 7,
+            "FS": 8,
+            "KC": 9,
+            "KN": 10,
+            "PO": 11,
+            "SC": 12,
+            "SI": 13,
+            "SL": 14,
+            "ST": 15,
+            "SV": 16,
+            "UN": 17,
+        }
+
+    IDX_TO_PITCH_TYPE = {v: k for k, v in PITCH_TYPE_TO_IDX.items()}

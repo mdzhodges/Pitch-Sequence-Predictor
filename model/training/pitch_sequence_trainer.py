@@ -8,6 +8,10 @@ from tqdm import tqdm
 from model.custom_types.trainer_type import TrainerComponents
 from utils.logger import Logger
 
+import torch.nn.functional as F
+
+from utils.constants import Constants
+
 
 class PitchSequenceTrainer:
 
@@ -39,21 +43,33 @@ class PitchSequenceTrainer:
 
     def train(self):
         for _ in tqdm(range(self.num_epochs)):
-            model_loss = 0
             self.encoder.train()
             for batch in self.train_loader:
                 # Get numeric and categorical data
+                labels = batch["label"]
                 numeric = batch["numeric"]
                 categorical = batch["categorical"]
 
                 # Send it all device
+                labels = labels.to(self.device)
                 numeric = numeric.to(self.device)
                 categorical = {k: v.to(self.device) for k, v in categorical.items()}
                 
                 model_out = self.encoder(numeric=numeric, categorical=categorical)
-                model_loss += model_out["loss"]
-            self.logger.info(f"{model_loss}")
                 
+                logits = model_out["logits"]
+
+                pred_indices = model_out["pred"]
+                
+                pitch_names = [Constants.IDX_TO_PITCH_TYPE[i.item()]
+                               for i in pred_indices]
+                
+                self.logger.info(f"{pitch_names}")
+                loss = F.cross_entropy(logits, labels)
+                loss.backward()
+                
+                                
+                                
 
     def get_indices_for_split(self, val_split: float = .1, test_split: float = .1):
         """Return train, val, test index lists based on your split ratios."""

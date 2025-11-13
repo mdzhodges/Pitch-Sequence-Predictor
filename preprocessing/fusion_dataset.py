@@ -30,6 +30,14 @@ class FusionDataset(Dataset):
         df: pd.DataFrame = pd.read_parquet(
             self.config.FUSED_CONTEXT_DATASET_FILE_PATH
         )
+        
+
+        print("FUSED DATASET NEXT_PITCH_TYPE:", sorted(
+            df["next_pitch_type"].dropna().unique().tolist()))
+        
+        print(df.columns.tolist())
+
+
 
         if sample and sample < len(df):
             df = df.sample(n=sample, random_state=1337).reset_index(drop=True)
