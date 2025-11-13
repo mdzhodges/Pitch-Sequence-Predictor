@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 from model.custom_types.data_types import ModelComponents
 
 
@@ -11,5 +12,5 @@ class PitchSequenceEncoder(nn.Module):
         self.learning_rate = model_params.learning_rate
         self.dropout = model_params.dropout
 
-    def forward(self):
+    def forward(self, numeric_features: torch.Tensor, cat_features: torch.Tensor, label: torch.Tensor):
         pass

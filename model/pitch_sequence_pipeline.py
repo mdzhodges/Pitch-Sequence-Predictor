@@ -18,6 +18,10 @@ class PitchSequencePipeline:
 
         # Check params of trainer, model, and sample
         self.dataset = FusionDataset(sample=self.sample)
+        
+        self.logger.info(f"Categorical: {self.dataset.categorical_cols}\n")
+        self.logger.info(f"Numeric: {self.dataset.numeric_cols} \n")
+
 
         # Initialize model_params
         self.pitch_seq_model_params = ModelComponents(

@@ -17,7 +17,7 @@ class FusionDataset(Dataset):
         {
             "numeric": Tensor([...]),
             "categorical": {col: Tensor(int), ...},
-            "label": Tensor(int)   # next_pitch_idx
+            "label": Tensor(int)
         }
     """
 
@@ -27,85 +27,84 @@ class FusionDataset(Dataset):
         # ------------------------------------------------------------
         # 1. Load unified parquet
         # ------------------------------------------------------------
-        parquet_path = self.config.FUSED_CONTEXT_DATASET_FILE_PATH
-        dataframe: pd.DataFrame = pd.read_parquet(parquet_path)
+        df: pd.DataFrame = pd.read_parquet(
+            self.config.FUSED_CONTEXT_DATASET_FILE_PATH
+        )
 
-        if sample and sample < len(dataframe):
-            dataframe = dataframe.sample(
-                n=sample, random_state=1337).reset_index(drop=True)
+        if sample and sample < len(df):
+            df = df.sample(n=sample, random_state=1337).reset_index(drop=True)
+
+        df = df.replace({None: np.nan})
 
         # ------------------------------------------------------------
-        # 2. Identify numeric + categorical columns robustly
+        # 2. Correct numeric detection (by convertibility)
         # ------------------------------------------------------------
-        exclude = {"next_pitch_idx", "pitcher_fg", "batter_fg"}
+        exclude = {"next_pitch_idx"}
+        numeric_cols = []
+        categorical_cols = []
 
-        # Test convertibility for numeric columns instead of trusting dtype
-        numeric_cols: list[str] = []
-        for c in dataframe.columns:
-            if c in exclude:
+        for col in df.columns:
+            if col in exclude:
                 continue
             try:
-                pd.to_numeric(dataframe[c].dropna().sample(
-                    n=min(500, len(dataframe))), errors="raise")
-                numeric_cols.append(c)
+                pd.to_numeric(df[col].dropna(), errors="raise")
+                numeric_cols.append(col)
             except Exception:
-                # Skip if conversion fails (mixed or string column)
-                continue
-
-        categorical_cols = [
-            c for c in dataframe.columns
-            if c not in exclude and c not in numeric_cols
-        ]
-
-        if not numeric_cols and not categorical_cols:
-            raise ValueError(
-                "No usable columns found in unified context parquet.")
+                categorical_cols.append(col)
 
         self.numeric_cols = numeric_cols
         self.categorical_cols = categorical_cols
 
         # ------------------------------------------------------------
-        # 3. Normalize numeric features safely
+        # 3. PERFECT numeric normalization pipeline
         # ------------------------------------------------------------
-        numeric_df = dataframe[numeric_cols].apply(
-            pd.to_numeric, errors="coerce")
+
+        # Convert everything numeric to float FIRST (fixes Int64 issues)
+        numeric_df = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
+        numeric_df = numeric_df.astype(np.float32)
+
+        # Fill NaNs safely AFTER conversion
+        numeric_df = numeric_df.fillna(numeric_df.mean()).fillna(0.0)
+
+        # Compute mean/std AFTER filling
         self.mean = numeric_df.mean()
         self.std = numeric_df.std().replace(0, 1)
+
         normalized = (numeric_df - self.mean) / self.std
-        normalized = normalized.fillna(0.0)
         normalized = normalized.astype(np.float32)
 
         self.x_numeric = torch.tensor(normalized.values, dtype=torch.float32)
-        self.x_numeric[torch.isnan(self.x_numeric)] = 0.0
 
         # ------------------------------------------------------------
-        # 4. Encode categorical columns (string -> int)
+        # 4. Encode categorical columns
         # ------------------------------------------------------------
         self.vocab_maps: dict[str, dict[str, int]] = {}
-        cat_tensors: dict[str, Tensor] = {}
+        cat_tensor_map: dict[str, Tensor] = {}
 
         for col in categorical_cols:
-            series = dataframe[col].astype(str).fillna("UNK")
+            series = df[col].astype("string").fillna("UNK")
+
             vocab = sorted(series.unique().tolist())
             mapping = {v: i for i, v in enumerate(vocab)}
+
             encoded = series.map(mapping).astype(np.int64)
-            cat_tensors[col] = torch.tensor(encoded.values, dtype=torch.long)
+            cat_tensor_map[col] = torch.tensor(
+                encoded.values, dtype=torch.long)
             self.vocab_maps[col] = mapping
 
-        self.x_categorical = cat_tensors
+        self.x_categorical = cat_tensor_map
 
         # ------------------------------------------------------------
-        # 5. Target tensor (next pitch classification)
+        # 5. Label tensor
         # ------------------------------------------------------------
-        if "next_pitch_idx" not in dataframe.columns:
-            raise ValueError(
-                "'next_pitch_idx' missing in unified context parquet.")
+        if "next_pitch_idx" not in df.columns:
+            raise ValueError("'next_pitch_idx' missing from fused dataset.")
 
-        labels = dataframe["next_pitch_idx"].fillna(-1).astype(np.int64)
+        labels = df["next_pitch_idx"].fillna(-1).astype(np.int64)
         self.y_labels = torch.tensor(labels.values, dtype=torch.long)
 
         # ------------------------------------------------------------
-        # 6. Dataset summary
+        # 6. Summary
         # ------------------------------------------------------------
         self.dataset_summary = {
             "total_samples": len(self),
@@ -114,9 +113,8 @@ class FusionDataset(Dataset):
             "num_classes": int(self.y_labels.max().item() + 1),
         }
 
-    # ------------------------------------------------------------
     def __len__(self):
-        return len(self.x_numeric)
+        return len(self.y_labels)
 
     def __getitem__(self, idx: int):
         numeric = self.x_numeric[idx]
@@ -125,18 +123,14 @@ class FusionDataset(Dataset):
         label = self.y_labels[idx]
         return {"numeric": numeric, "categorical": categorical, "label": label}
 
-    # ------------------------------------------------------------
-    # Helper methods
-    # ------------------------------------------------------------
     def get_vocab_sizes(self) -> dict[str, int]:
-        """Return {col: vocab_size} for each categorical column."""
         return {col: len(vocab) for col, vocab in self.vocab_maps.items()}
 
     def get_example(self, idx: int = 0):
-        """Inspect decoded values for a single row (debug)."""
         cat_example = {
-            col: list(vocab.keys())[list(vocab.values()).index(
-                int(self.x_categorical[col][idx]))]
+            col: next(
+                k for k, v in vocab.items() if v == int(self.x_categorical[col][idx])
+            )
             for col, vocab in self.vocab_maps.items()
         }
         return {

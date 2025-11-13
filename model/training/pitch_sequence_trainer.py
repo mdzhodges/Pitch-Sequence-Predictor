@@ -1,5 +1,7 @@
 from model.custom_types.trainer_type import TrainerComponents
 from torch.utils.data import Dataset, DataLoader, Subset
+from utils.logger import Logger
+from tqdm import tqdm
 import torch
 import random
 
@@ -15,18 +17,24 @@ class PitchSequenceTrainer:
         self.num_epochs = model_params.num_epochs
         self.batch_size = model_params.batch_size
 
+        # Initiate dataset and encoder
         self.dataset = model_params.dataset
-        self.pitch_sequence_encoder = model_params.pitch_seq_encoder    
+        self.encoder = model_params.pitch_seq_encoder
         
-        self.pitch_sequence_encoder = self.pitch_sequence_encoder.to(
+        # send to device
+        self.encoder = self.encoder.to(
             self.device)
 
         # Get the three loaders for train/val/test
         self.train_loader, self.val_loader, self.test_loader = self.get_loaders(
             val_split=.1, test_split=.1)
+        
+        # logger
+        self.logger = Logger(self.__class__.__name__)
 
     def train(self):
-        pass
+        for _ in tqdm(range(self.num_epochs)):
+            self.encoder.train()
 
     def get_indices_for_split(self, val_split: float = .1, test_split: float = .1):
         """Return train, val, test index lists based on your split ratios."""
