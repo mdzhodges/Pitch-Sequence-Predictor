@@ -21,10 +21,8 @@ class FusionDataset(Dataset):
         }
     """
 
-    def __init__(self, sample: int | None = None, debug: bool = False):
+    def __init__(self, sample: int | None = None):
         self.config = Config()
-        self.debug = debug
-        self.debug_info = None
 
         # ------------------------------------------------------------
         # 1. Load unified parquet
@@ -34,7 +32,7 @@ class FusionDataset(Dataset):
 
         if sample and sample < len(dataframe):
             dataframe = dataframe.sample(
-                n=sample, random_state=42).reset_index(drop=True)
+                n=sample, random_state=1337).reset_index(drop=True)
 
         # ------------------------------------------------------------
         # 2. Identify numeric + categorical columns robustly
@@ -116,9 +114,6 @@ class FusionDataset(Dataset):
             "num_classes": int(self.y_labels.max().item() + 1),
         }
 
-        if self.debug:
-            self.debug_info = self.debug_summary()
-
     # ------------------------------------------------------------
     def __len__(self):
         return len(self.x_numeric)
@@ -149,19 +144,3 @@ class FusionDataset(Dataset):
             "categorical": cat_example,
             "label": int(self.y_labels[idx]),
         }
-
-    def debug_summary(self) -> dict[str, object]:
-        """Collect detailed tensor and column info for debugging."""
-        vocab_sizes = self.get_vocab_sizes()
-        categorical_preview = list(self.x_categorical.keys())[:10]
-        numeric_preview = []
-        if len(self) > 0:
-            numeric_preview = self.x_numeric[0].tolist()[:10]
-
-        summary = {
-            "dataset_summary": self.dataset_summary,
-            "categorical_preview": categorical_preview,
-            "vocab_sizes": vocab_sizes,
-            "sample_numeric_values": numeric_preview,
-        }
-        return summary

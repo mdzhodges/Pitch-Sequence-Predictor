@@ -38,23 +38,25 @@ class ContextDataCollection:
             self.logger.error(
                 f"Exception thrown while retrieving statcast data {e}")
             raise Exception(
-                f"Exception thrown while retrieving statcast data {e}")
+                f"Exception thrown while retrieving statcast data {e}"
+            ) from e
 
     def _get_cleaned_dataframe(self, statcast_dataframe: pd.DataFrame) -> pd.DataFrame:
 
         available_columns_list: list[str] = []
 
-        for column_str in Constants.CONTEXT_COLUMNS_LIST:
-            if column_str in statcast_dataframe.columns:
-                available_columns_list.append(column_str)
-
+        available_columns_list.extend(
+            column_str
+            for column_str in Constants.CONTEXT_COLUMNS_LIST
+            if column_str in statcast_dataframe.columns
+        )
         missing_columns_list: set[str] = set(
             Constants.CONTEXT_COLUMNS_LIST) - set(available_columns_list)
-        missing_columns_list_length: int = len(missing_columns_list)
         sorted_missing_columns_list: list[str] = sorted(
             list(missing_columns_list))
 
         if missing_columns_list:
+            missing_columns_list_length: int = len(missing_columns_list)
             self.logger.info(
                 f"Missing columns skipped ({missing_columns_list_length}): {sorted_missing_columns_list}")
 
@@ -78,14 +80,15 @@ class ContextDataCollection:
             cleaned_dataframe.to_parquet(
                 path=self.export_stat_cast_file_path, index=False)
 
-            self.logger.info(f"Successfully exported StatCast Data")
+            self.logger.info("Successfully exported StatCast Data")
             self.logger.info("=" * 100)
 
         except Exception as e:
             self.logger.error(
                 f"Exception thrown while exporting statcast data {e}")
             raise Exception(
-                f"Exception thrown while exporting statcast data {e}")
+                f"Exception thrown while exporting statcast data {e}"
+            ) from e
 
     # Columns to extract (based on 2025 Statcast schema)
 
@@ -121,22 +124,29 @@ class ContextDataCollection:
         context_dataframe_column_length: int = len(context_dataframe.columns)
 
         try:
-            self.logger.info(
-                f"Exporting data to: {self.export_context_file_path}")
-            self.logger.info("=" * 100)
-
-            context_dataframe.to_parquet(
-                path=self.export_context_file_path, index=False)
-
-            self.logger.info(
-                f"Saved {context_dataframe_length:,} rows × {context_dataframe_column_length:,} columns to {self.export_context_file_path}")
-
-            self.logger.info(
-                f"Successfully exported data to: {self.export_context_file_path}")
-            self.logger.info("=" * 100)
-
+            self._extracted_from_export_dataframe_to_parquet_file_8(
+                context_dataframe,
+                context_dataframe_length,
+                context_dataframe_column_length,
+            )
         except Exception as e:
             self.logger.error(
                 f"Exception thrown while exporting context data {e}")
             raise Exception(
                 f"Exception thrown while exporting context data {e}")
+
+    # TODO Rename this here and in `export_dataframe_to_parquet_file`
+    def _extracted_from_export_dataframe_to_parquet_file_8(self, context_dataframe, context_dataframe_length, context_dataframe_column_length):
+        self.logger.info(
+            f"Exporting data to: {self.export_context_file_path}")
+        self.logger.info("=" * 100)
+
+        context_dataframe.to_parquet(
+            path=self.export_context_file_path, index=False)
+
+        self.logger.info(
+            f"Saved {context_dataframe_length:,} rows × {context_dataframe_column_length:,} columns to {self.export_context_file_path}")
+
+        self.logger.info(
+            f"Successfully exported data to: {self.export_context_file_path}")
+        self.logger.info("=" * 100)
