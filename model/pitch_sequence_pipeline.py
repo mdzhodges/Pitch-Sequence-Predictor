@@ -1,7 +1,7 @@
 from model.custom_types.data_types import ModelComponents
-from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
 from model.custom_types.pitch_sequence_pipeline_components import PitchSequencePipelineComponents
 from model.custom_types.trainer_type import TrainerComponents
+from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
 from model.training.pitch_sequence_trainer import PitchSequenceTrainer
 from preprocessing.fusion_dataset import FusionDataset
 from utils.logger import Logger
@@ -18,10 +18,6 @@ class PitchSequencePipeline:
 
         # Check params of trainer, model, and sample
         self.dataset = FusionDataset(sample=self.sample)
-        
-        self.logger.info(f"Categorical: {self.dataset.categorical_cols}\n")
-        self.logger.info(f"Numeric: {self.dataset.numeric_cols} \n")
-
 
         # Initialize model_params
         self.pitch_seq_model_params = ModelComponents(
