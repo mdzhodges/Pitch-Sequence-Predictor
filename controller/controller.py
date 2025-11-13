@@ -10,6 +10,8 @@ class Controller:
     def __init__(self, parsed_args) -> None:
         self.parsed_args = parsed_args
         self.logger = Logger(self.__class__.__name__)
+        
+        self.execute_sequence_pipeline()
 
     def export_context_dataset_to_parquet_file(self) -> None:
         context_data_collection: ContextDataCollection = ContextDataCollection()

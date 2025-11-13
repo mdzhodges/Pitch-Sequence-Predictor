@@ -4,6 +4,7 @@ from utils.logger import Logger
 from tqdm import tqdm
 import torch
 import random
+from typing import Dict, Any
 
 
 class PitchSequenceTrainer:
@@ -34,10 +35,22 @@ class PitchSequenceTrainer:
 
     def train(self):
         for _ in tqdm(range(self.num_epochs)):
+            model_loss = 0
             self.encoder.train()
             for batch in self.train_loader:
-                self.encoder(**batch)
+                # Get numeric and categorical data
+                numeric = batch["numeric"]
+                categorical = batch["categorical"]
+
+                # Send it all device
+                numeric = numeric.to(self.device)
+                categorical = {k: v.to(self.device) for k, v in categorical.items()}
                 
+                model_out = self.encoder(numeric=numeric, categorical=categorical)
+                model_loss += model_out["loss"]
+            self.logger.info(f"{model_loss}")
+                
+
     def get_indices_for_split(self, val_split: float = .1, test_split: float = .1):
         """Return train, val, test index lists based on your split ratios."""
         total_length = len(self.dataset)
@@ -89,3 +102,21 @@ class PitchSequenceTrainer:
         )
 
         return train_loader, val_loader, test_loader
+
+    def move_to_device(self,batch, device: torch.device) -> Dict[str, Any]:
+        """
+        Recursively move tensors in the batch onto the specified device.
+        """
+        out: Dict[str, Any] = {}
+        for key, value in batch.items():
+            if isinstance(value, torch.Tensor):
+                out[key] = value.to(device, non_blocking=True)
+            elif isinstance(value, dict):
+                out[key] = {
+                    inner_key: inner_val.to(device, non_blocking=True) if isinstance(
+                        inner_val, torch.Tensor) else inner_val
+                    for inner_key, inner_val in value.items()
+                }
+            else:
+                out[key] = value
+        return out
