@@ -19,6 +19,8 @@ class Config(BaseSettings):
         "data/pitch_sequence_2025.parquet")
     FUSED_CONTEXT_DATASET_FILE_PATH: Path = Path(
         "data/unified_context.parquet")
+    
+    PITCHER_ALLOWED_JSON: Path = Path("data/pitcher_allowed.json")
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

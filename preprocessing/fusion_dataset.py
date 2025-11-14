@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 from torch import Tensor
 from torch.utils.data import Dataset
+import json
 
 from controller.config import Config
 from utils.constants import Constants
@@ -10,88 +11,85 @@ from utils.constants import Constants
 
 class FusionDataset(Dataset):
     """
-    Loads the unified context parquet and prepares it for model training.
+    Loads the fused context parquet and prepares it for model training.
     Produces:
-        numeric: Tensor[F]
-        categorical: {col: Tensor(int)}
-        label: Tensor(int)
-        pitcher_id: int
+        numeric      -> Tensor[F]
+        categorical  -> dict[col, Tensor(int)]
+        label        -> Tensor(int)
+        pitcher_id   -> int
     """
 
     def __init__(self, sample: int | None = None):
         self.config = Config()
 
         # ------------------------------------------------------------
-        # 1. Load parquet
+        # 1. Load parquet (full statcast fused context)
         # ------------------------------------------------------------
         df: pd.DataFrame = pd.read_parquet(
-            self.config.FUSED_CONTEXT_DATASET_FILE_PATH
-        )
+            self.config.FUSED_CONTEXT_DATASET_FILE_PATH)
+        df = df.replace({None: np.nan})
 
         # Optional sampling
         if sample is not None and sample < len(df):
             df = df.sample(n=sample, random_state=1337).reset_index(drop=True)
 
-        # Convert None → NaN
-        df = df.replace({None: np.nan})
-
-        # Preserve pitcher IDs
-        self.raw_pitcher_ids = df["pitcher"].astype(
-            "int64").astype(int).tolist()
+        # Store pitcher IDs for dataset access
+        self.raw_pitcher_ids = df["pitcher"].astype(int).tolist()
 
         # ------------------------------------------------------------
-        # 2. Normalize / correct raw pitch labels BEFORE mapping
+        # 2. Load PRECOMPUTED pitcher repertoires
+        # ------------------------------------------------------------
+        with open(self.config.PITCHER_ALLOWED_JSON, "r") as f:
+            self.pitcher_to_allowed = {
+                int(k): v for k, v in json.load(f).items()}
+
+        # ------------------------------------------------------------
+        # 3. Normalize next_pitch_type -> global constants
         # ------------------------------------------------------------
         def norm_pitch(x: str) -> str:
-            if x == "FF":  # FF → FA fastball
+            if x == "FF":
                 return "FA"
-            if x == "ST":  # sweeper → slider
-                return "SL"
-            if x == "SV":  # slurve → slider
+            if x in ("ST", "SV"):
                 return "SL"
             return x
 
         df["next_pitch_type"] = (
             df["next_pitch_type"]
             .astype("string")
-            .fillna("UN")            # unknown
+            .fillna("UN")
             .map(norm_pitch)
         )
 
-        # ------------------------------------------------------------
-        # 3. Create *correct labels* using global mapping
-        # ------------------------------------------------------------
         pitch_map = Constants.PITCH_TYPE_TO_IDX
-        df["correct_pitch_idx"] = df["next_pitch_type"].map(pitch_map)
 
-        if df["correct_pitch_idx"].isna().any():
-            missing_labels = df.loc[df["correct_pitch_idx"].isna(
-            ), "next_pitch_type"].unique()
-            raise ValueError(
-                f"ERROR: Unknown pitch types encountered: {missing_labels}")
+        # Create final labels (guaranteed correct)
+        df["pitch_idx"] = df["next_pitch_type"].map(pitch_map)
+
+        if df["pitch_idx"].isna().any():
+            bad = df.loc[df["pitch_idx"].isna(), "next_pitch_type"].unique()
+            raise ValueError(f"Unknown pitch types found: {bad}")
 
         self.y_labels = torch.tensor(
-            df["correct_pitch_idx"].astype(np.int64).values,
-            dtype=torch.long
-        )
+            df["pitch_idx"].astype(int).values, dtype=torch.long)
 
         # ------------------------------------------------------------
-        # 4. Split numeric vs categorical
+        # 4. Split numeric vs categorical columns
         # ------------------------------------------------------------
-        exclude_cols = {
-            "correct_pitch_idx",
+        exclude = {
+            "pitch_idx",
             "next_pitch_type",
-            "next_pitch_idx",    # ignore this completely
-            "pitch_type",        # raw pitch type
-            "events",            # non-numeric string
+            "next_pitch_idx",
+            "pitch_type",
+            "events",
         }
 
         numeric_cols = []
         categorical_cols = []
 
         for col in df.columns:
-            if col in exclude_cols:
+            if col in exclude:
                 continue
+
             try:
                 pd.to_numeric(df[col].dropna(), errors="raise")
                 numeric_cols.append(col)
@@ -104,8 +102,8 @@ class FusionDataset(Dataset):
         # ------------------------------------------------------------
         # 5. Normalize numeric features
         # ------------------------------------------------------------
-        numeric_df = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
-        numeric_df = numeric_df.astype(np.float32)
+        numeric_df = df[numeric_cols].apply(
+            pd.to_numeric, errors="coerce").astype(np.float32)
         numeric_df = numeric_df.fillna(numeric_df.mean()).fillna(0.0)
 
         self.mean = numeric_df.mean()
@@ -115,10 +113,10 @@ class FusionDataset(Dataset):
         self.x_numeric = torch.tensor(normalized.values, dtype=torch.float32)
 
         # ------------------------------------------------------------
-        # 6. Encode categorical columns (string → int)
+        # 6. Encode categoricals (string -> int)
         # ------------------------------------------------------------
-        self.vocab_maps: dict[str, dict[str, int]] = {}
-        cat_tensor_map: dict[str, Tensor] = {}
+        self.vocab_maps = {}
+        cat_tensor_map = {}
 
         for col in categorical_cols:
             series = df[col].astype("string").fillna("UNK")
@@ -133,29 +131,14 @@ class FusionDataset(Dataset):
         self.x_categorical = cat_tensor_map
 
         # ------------------------------------------------------------
-        # 7. Precompute allowed pitch indices for each pitcher
-        # ------------------------------------------------------------
-        grouped = df.groupby("pitcher")["pitch_type"].unique()
-        self.pitcher_to_allowed: dict[int, list[int]] = {}
-
-        for pitcher_id, raw_list in grouped.items():
-            allowed = set()
-            for raw in raw_list:
-                norm = norm_pitch(str(raw))
-                if norm in pitch_map:
-                    allowed.add(pitch_map[norm])
-            self.pitcher_to_allowed[int(pitcher_id)] = sorted(allowed)
-
-        # ------------------------------------------------------------
-        # 8. Summary
+        # 7. Dataset summary
         # ------------------------------------------------------------
         self.dataset_summary = {
             "total_samples": len(self),
             "numeric_dim": self.x_numeric.shape[1],
             "num_categories": len(self.x_categorical),
-            "num_classes": len(pitch_map),   # always 18
+            "num_classes": len(pitch_map),  # always 18
         }
-        
 
     # ------------------------------------------------------------
     # PyTorch Dataset Interface
@@ -179,10 +162,11 @@ class FusionDataset(Dataset):
 
     def get_example(self, idx: int = 0):
         cat_example = {
-            col: next(k for k, v in vocab.items() if v ==
-                      int(self.x_categorical[col][idx]))
+            col: [k for k, v in vocab.items() if v == int(
+                self.x_categorical[col][idx])][0]
             for col, vocab in self.vocab_maps.items()
         }
+
         return {
             "numeric": self.x_numeric[idx],
             "categorical": cat_example,
