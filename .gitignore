@@ -208,3 +208,4 @@ __marimo__/
 data/context_2025_full.parquet
 data/unified_context.parquet
 data/statcast*
+.vscode
