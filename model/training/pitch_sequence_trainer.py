@@ -77,11 +77,13 @@ class PitchSequenceTrainer:
                 num_batches += 1
 
             avg_loss = total_loss / num_batches
+
+
             self.logger.info(
                 f"Epoch {epoch+1}/{self.num_epochs} — "
-                f"Loss: {total_loss:.4f} (avg per batch: {avg_loss:.4f})"
+                f"Epoch Loss (avg): {avg_loss:.4f} | "
+                f"Total Loss Sum: {total_loss:.4f}"
             )
-
         PitchSequenceEvaluator(self.encoder, test_dataset=self.test_loader).run()
 
 

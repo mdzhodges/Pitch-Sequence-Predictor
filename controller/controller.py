@@ -10,7 +10,9 @@ class Controller:
     def __init__(self, parsed_args) -> None:
         self.parsed_args = parsed_args
         self.logger = Logger(self.__class__.__name__)
-        
+        if parsed_args.gen_data:
+            self.logger.info("Generating Datasets")
+            self.export_context_dataset_to_parquet_file()
         self.execute_sequence_pipeline()
 
     def export_context_dataset_to_parquet_file(self) -> None:

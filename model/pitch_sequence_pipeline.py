@@ -47,9 +47,6 @@ class PitchSequencePipeline:
         # Initialize trainer
         self.trainer = PitchSequenceTrainer(model_params=trainer_components)
 
-        # We Good message
-        self.logger.info("Pipeline is chilling, initialized")
-
     def _display_model_parameters(self) -> None:
         self.logger.info("Encoder Initialized with the Params: \n"
                          f"  Learning Rate: {self.pitch_seq_model_params.learning_rate}\n"
