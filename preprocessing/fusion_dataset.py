@@ -21,70 +21,76 @@ class FusionDataset(Dataset):
     def __init__(self, sample: int | None = None):
         self.config = Config()
 
-        # Map pitch types → statcast pitch mix columns
-        self.pitch_mix_columns = {
-            "CH": "CH% (sc)",
-            "CS": "CS% (sc)",
-            "CU": "CU% (sc)",
-            "EP": "EP% (sc)",
-            "FA": "FA% (sc)",
-            "FC": "FC% (sc)",
-            "FF": None,
-            "FO": "FO% (sc)",
-            "FS": "FS% (sc)",
-            "KC": "KC% (sc)",
-            "KN": "KN% (sc)",
-            "PO": "PO% (sc)",
-            "SC": "SC% (sc)",
-            "SI": "SI% (sc)",
-            "SL": "SL% (sc)",
-            "ST": None,
-            "SV": None,
-            "UN": "UN% (sc)",
-        }
-
         # ------------------------------------------------------------
-        # 1. Load unified parquet
+        # 1. Load parquet
         # ------------------------------------------------------------
         df: pd.DataFrame = pd.read_parquet(
             self.config.FUSED_CONTEXT_DATASET_FILE_PATH
         )
 
-        # Convert pitcher ids → python int list
+        # Optional sampling
+        if sample is not None and sample < len(df):
+            df = df.sample(n=sample, random_state=1337).reset_index(drop=True)
+
+        # Convert None → NaN
+        df = df.replace({None: np.nan})
+
+        # Preserve pitcher IDs
         self.raw_pitcher_ids = df["pitcher"].astype(
             "int64").astype(int).tolist()
 
-        # Sample if needed
-        if sample and sample < len(df):
-            df = df.sample(n=sample, random_state=1337).reset_index(drop=True)
+        # ------------------------------------------------------------
+        # 2. Normalize / correct raw pitch labels BEFORE mapping
+        # ------------------------------------------------------------
+        def norm_pitch(x: str) -> str:
+            if x == "FF":  # FF → FA fastball
+                return "FA"
+            if x == "ST":  # sweeper → slider
+                return "SL"
+            if x == "SV":  # slurve → slider
+                return "SL"
+            return x
 
-        df = df.replace({None: np.nan})
+        df["next_pitch_type"] = (
+            df["next_pitch_type"]
+            .astype("string")
+            .fillna("UN")            # unknown
+            .map(norm_pitch)
+        )
 
         # ------------------------------------------------------------
-        # 1B. Build allowed pitch set per pitcher
+        # 3. Create *correct labels* using global mapping
         # ------------------------------------------------------------
-        grouped = df.groupby("pitcher")["pitch_type"].unique()
-        self.pitcher_to_allowed: dict[int, list[int]] = {}
+        pitch_map = Constants.PITCH_TYPE_TO_IDX
+        df["correct_pitch_idx"] = df["next_pitch_type"].map(pitch_map)
 
-        for pitcher_id, pitch_list in grouped.items():
-            allowed: list[int] = []
+        if df["correct_pitch_idx"].isna().any():
+            missing_labels = df.loc[df["correct_pitch_idx"].isna(
+            ), "next_pitch_type"].unique()
+            raise ValueError(
+                f"ERROR: Unknown pitch types encountered: {missing_labels}")
 
-            for raw_pitch in pitch_list:
-                norm = self.normalize_pitch_label(str(raw_pitch))
-                if norm in Constants.PITCH_TYPE_TO_IDX:
-                    allowed.append(Constants.PITCH_TYPE_TO_IDX[norm])
-
-            self.pitcher_to_allowed[int(pitcher_id)] = sorted(set(allowed))
+        self.y_labels = torch.tensor(
+            df["correct_pitch_idx"].astype(np.int64).values,
+            dtype=torch.long
+        )
 
         # ------------------------------------------------------------
-        # 2. Detect numeric vs categorical
+        # 4. Split numeric vs categorical
         # ------------------------------------------------------------
-        exclude = {"next_pitch_idx"}
+        exclude_cols = {
+            "correct_pitch_idx",
+            "next_pitch_type",
+            "next_pitch_idx",    # ignore this completely
+            "pitch_type",        # raw pitch type
+            "events",            # non-numeric string
+        }
+
         numeric_cols = []
         categorical_cols = []
 
         for col in df.columns:
-            if col in exclude:
+            if col in exclude_cols:
                 continue
             try:
                 pd.to_numeric(df[col].dropna(), errors="raise")
@@ -96,7 +102,7 @@ class FusionDataset(Dataset):
         self.categorical_cols = categorical_cols
 
         # ------------------------------------------------------------
-        # 3. Normalize numeric features
+        # 5. Normalize numeric features
         # ------------------------------------------------------------
         numeric_df = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
         numeric_df = numeric_df.astype(np.float32)
@@ -109,7 +115,7 @@ class FusionDataset(Dataset):
         self.x_numeric = torch.tensor(normalized.values, dtype=torch.float32)
 
         # ------------------------------------------------------------
-        # 4. Encode categorical columns
+        # 6. Encode categorical columns (string → int)
         # ------------------------------------------------------------
         self.vocab_maps: dict[str, dict[str, int]] = {}
         cat_tensor_map: dict[str, Tensor] = {}
@@ -127,25 +133,29 @@ class FusionDataset(Dataset):
         self.x_categorical = cat_tensor_map
 
         # ------------------------------------------------------------
-        # 5. Labels
+        # 7. Precompute allowed pitch indices for each pitcher
         # ------------------------------------------------------------
-        if "next_pitch_idx" not in df.columns:
-            raise ValueError("'next_pitch_idx' missing from fused dataset.")
+        grouped = df.groupby("pitcher")["pitch_type"].unique()
+        self.pitcher_to_allowed: dict[int, list[int]] = {}
 
-        self.y_labels = torch.tensor(
-            df["next_pitch_idx"].fillna(-1).astype(np.int64).values,
-            dtype=torch.long,
-        )
+        for pitcher_id, raw_list in grouped.items():
+            allowed = set()
+            for raw in raw_list:
+                norm = norm_pitch(str(raw))
+                if norm in pitch_map:
+                    allowed.add(pitch_map[norm])
+            self.pitcher_to_allowed[int(pitcher_id)] = sorted(allowed)
 
         # ------------------------------------------------------------
-        # 6. Summary
+        # 8. Summary
         # ------------------------------------------------------------
         self.dataset_summary = {
             "total_samples": len(self),
             "numeric_dim": self.x_numeric.shape[1],
             "num_categories": len(self.x_categorical),
-            "num_classes": int(self.y_labels.max().item() + 1),
+            "num_classes": len(pitch_map),   # always 18
         }
+        
 
     # ------------------------------------------------------------
     # PyTorch Dataset Interface
@@ -156,9 +166,7 @@ class FusionDataset(Dataset):
     def __getitem__(self, idx: int):
         return {
             "numeric": self.x_numeric[idx],
-            "categorical": {
-                col: tensor[idx] for col, tensor in self.x_categorical.items()
-            },
+            "categorical": {col: tensor[idx] for col, tensor in self.x_categorical.items()},
             "label": self.y_labels[idx],
             "pitcher_id": self.raw_pitcher_ids[idx],
         }
@@ -180,18 +188,3 @@ class FusionDataset(Dataset):
             "categorical": cat_example,
             "label": int(self.y_labels[idx]),
         }
-
-    # ------------------------------------------------------------
-    # Pitch normalization logic
-    # ------------------------------------------------------------
-    def normalize_pitch_label(self, raw: str) -> str:
-        """
-        Normalizes statcast/raw pitch labels into official model-wide constants.
-        """
-        if raw == "FF":
-            return "FA"   # FF → FA
-        if raw == "ST":
-            return "SL"   # sweeper → slider
-        if raw == "SV":
-            return "SL"   # slurve → slider
-        return raw
