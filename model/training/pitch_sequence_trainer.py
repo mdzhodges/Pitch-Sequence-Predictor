@@ -24,48 +24,66 @@ class PitchSequenceTrainer:
             else 'cpu'
         )
 
-        # Various training needs
         self.num_epochs = model_params.num_epochs
         self.batch_size = model_params.batch_size
 
-        # Initiate dataset and encoder
         self.dataset = model_params.dataset
-        self.encoder = model_params.pitch_seq_encoder
+        self.encoder = model_params.pitch_seq_encoder.to(self.device)
 
-        # send to device
-        self.encoder = self.encoder.to(
-            self.device)
-
-        # Get the three loaders for train/val/test
+        # splits
         self.train_loader, self.val_loader, self.test_loader = self.get_loaders(
-            val_split=.1, test_split=.1)
+            val_split=0.1, test_split=0.1
+        )
 
-        # logger
         self.logger = Logger(self.__class__.__name__)
 
+        # Adam with weight decay
+        self.optimizer = torch.optim.Adam(
+            self.encoder.parameters(),
+            lr=self.encoder.learning_rate,
+            weight_decay=1e-4
+        )
+
+
     def train(self):
-        for _ in tqdm(range(self.num_epochs)):
+        for epoch in range(self.num_epochs):
             self.encoder.train()
+            total_loss = 0.0
+            num_batches = 0
+
             for batch in self.train_loader:
-                # Get numeric and categorical data, and send to device
                 labels = batch["label"].to(self.device)
                 numeric = batch["numeric"].to(self.device)
                 pitcher_id = batch["pitcher_id"].to(self.device)
-                categorical = {k: v.to(self.device) for k, v in batch["categorical"].items()}
-                
-                model_out = self.encoder(numeric=numeric, categorical=categorical, pitcher_id = pitcher_id)
-                
-                logits = model_out["logits"]
-    
+                categorical = {k: v.to(self.device)
+                            for k, v in batch["categorical"].items()}
+
+                self.optimizer.zero_grad()
+
+                out = self.encoder(
+                    numeric=numeric,
+                    categorical=categorical,
+                    pitcher_id=pitcher_id,
+                )
+
+                logits = out["logits"]
                 loss = F.cross_entropy(logits, labels)
+
                 loss.backward()
-                
-        PitchSequenceEvaluator(
-            self.encoder, test_dataset=self.test_loader).run()
+                torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), 5.0)
+                self.optimizer.step()
 
+                total_loss += loss.item()
+                num_batches += 1
 
-                                
-                                
+            avg_loss = total_loss / num_batches
+            self.logger.info(
+                f"Epoch {epoch+1}/{self.num_epochs} — "
+                f"Loss: {total_loss:.4f} (avg per batch: {avg_loss:.4f})"
+            )
+
+        PitchSequenceEvaluator(self.encoder, test_dataset=self.test_loader).run()
+
 
     def get_indices_for_split(self, val_split: float = .1, test_split: float = .1):
         """Return train, val, test index lists based on your split ratios."""

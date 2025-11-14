@@ -6,7 +6,7 @@ import inspect
 
 import torch
 from torch.utils.data import DataLoader
-from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score, f1_score
 from tqdm import tqdm
 
 from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEncoder
@@ -65,11 +65,14 @@ class PitchSequenceEvaluator:
 
         f1_macro = f1_score(y_true, y_pred, average="macro", zero_division=0)
         f1_micro = f1_score(y_true, y_pred, average="micro", zero_division=0)
+        accuracy = accuracy_score(y_true, y_pred)
 
         print(f"F1 Macro: {f1_macro:.4f}")
         print(f"F1 Micro: {f1_micro:.4f}")
+        print(f"Accuracy: {accuracy:.4f}")
 
         return {
             "f1_macro": float(f1_macro),
             "f1_micro": float(f1_micro),
+            "accuracy": float(accuracy),
         }

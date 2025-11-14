@@ -12,13 +12,7 @@ class CLIArguments:
         self._args = None
 
     def _define_arguments(self) -> None:
-        self._parser.add_argument("--lr_hitter", type=float, default=1e-5)
-        self._parser.add_argument("--lr_pitcher", type=float, default=1e-5)
-        self._parser.add_argument("--lr_context", type=float, default=1e-5)
         self._parser.add_argument("--lr_pitch_seq", type=float, default=1e-5)
-        self._parser.add_argument("--dropout_hitter", type=float, default=.3)
-        self._parser.add_argument("--dropout_pitcher", type=float, default=.3)
-        self._parser.add_argument("--dropout_context", type=float, default=.3)
         self._parser.add_argument(
             "--dropout_pitch_seq", type=float, default=.3)
         self._parser.add_argument("--sample", type=int, default=1000)
