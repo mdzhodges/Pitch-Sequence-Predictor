@@ -5,6 +5,7 @@ from model.pitch_sequence_encoder.pitch_sequence_encoder import PitchSequenceEnc
 from model.training.pitch_sequence_trainer import PitchSequenceTrainer
 from preprocessing.fusion_dataset import FusionDataset
 from utils.logger import Logger
+from evaluation.eval import PitchSequenceEvaluator
 
 
 class PitchSequencePipeline:
@@ -23,7 +24,7 @@ class PitchSequencePipeline:
         self.pitch_seq_model_params = ModelComponents(
             learning_rate=pitch_sequence_pipeline_components.learning_rate_pitch_sequence,
             dropout=pitch_sequence_pipeline_components.dropout_pitch_sequence, dataset=self.dataset,
-            hidden_dim=256, embed_dim=128)
+            hidden_dim=512, embed_dim=256)
 
         # Log
         self.logger.info(f"Fusion Dataset Sample: {self.sample}")

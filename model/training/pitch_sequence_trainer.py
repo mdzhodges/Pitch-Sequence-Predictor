@@ -12,6 +12,8 @@ import torch.nn.functional as F
 
 from utils.constants import Constants
 
+from evaluation.eval import PitchSequenceEvaluator
+
 
 class PitchSequenceTrainer:
 
@@ -45,29 +47,23 @@ class PitchSequenceTrainer:
         for _ in tqdm(range(self.num_epochs)):
             self.encoder.train()
             for batch in self.train_loader:
-                # Get numeric and categorical data
-                labels = batch["label"]
-                numeric = batch["numeric"]
-                categorical = batch["categorical"]
-
-                # Send it all device
-                labels = labels.to(self.device)
-                numeric = numeric.to(self.device)
-                categorical = {k: v.to(self.device) for k, v in categorical.items()}
+                # Get numeric and categorical data, and send to device
+                labels = batch["label"].to(self.device)
+                numeric = batch["numeric"].to(self.device)
+                pitcher_id = batch["pitcher_id"].to(self.device)
+                categorical = {k: v.to(self.device) for k, v in batch["categorical"].items()}
                 
-                model_out = self.encoder(numeric=numeric, categorical=categorical)
+                model_out = self.encoder(numeric=numeric, categorical=categorical, pitcher_id = pitcher_id)
                 
                 logits = model_out["logits"]
-
-                pred_indices = model_out["pred"]
-                
-                pitch_names = [Constants.IDX_TO_PITCH_TYPE[i.item()]
-                               for i in pred_indices]
-                
-                self.logger.info(f"{pitch_names}")
+    
                 loss = F.cross_entropy(logits, labels)
                 loss.backward()
                 
+        PitchSequenceEvaluator(
+            self.encoder, test_dataset=self.test_loader).run()
+
+
                                 
                                 
 
