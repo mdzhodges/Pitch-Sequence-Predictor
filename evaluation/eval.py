@@ -25,16 +25,29 @@ class PitchSequenceEvaluator:
         self._forward_params = inspect.signature(self.model.forward).parameters
 
     def _move_batch_to_device(self, batch: Dict[str, Any]):
-        numeric = batch["numeric"].to(self.device)
+        pitch_seq_numeric = batch["pitch_seq_numeric"].to(self.device)
+        pitch_seq_categorical = {
+            key: tensor.to(self.device)
+            for key, tensor in batch["pitch_seq_categorical"].items()
+        }
+        pitch_seq_mask = batch["pitch_seq_mask"].to(self.device)
         labels = batch["label"].to(self.device)
         pitcher = batch["pitcher_id"].to(self.device)
-        categorical = {key: tensor.to(self.device) for key, tensor in batch["categorical"].items()}
-        return numeric, categorical, pitcher, labels
+        return pitch_seq_numeric, pitch_seq_categorical, pitch_seq_mask, pitcher, labels
 
-    def _forward_model(self, numeric: torch.Tensor, categorical: Dict[str, torch.Tensor], pitcher) -> Dict[str, torch.Tensor]:
+    def _forward_model(self,
+                       pitch_seq_numeric: torch.Tensor,
+                       pitch_seq_categorical: Dict[str, torch.Tensor],
+                       pitch_seq_mask: torch.Tensor,
+                       pitcher) -> Dict[str, torch.Tensor]:
+        pitch_seq = self.model.build_pitch_sequence_tensor(
+            pitch_seq_numeric=pitch_seq_numeric,
+            pitch_seq_categorical=pitch_seq_categorical
+        )
+
         model_kwargs: Dict[str, Any] = {
-            "numeric": numeric,
-            "categorical": categorical,
+            "pitch_seq": pitch_seq,
+            "pitch_seq_mask": pitch_seq_mask,
             "pitcher_id": pitcher,
         }
 
@@ -48,9 +61,14 @@ class PitchSequenceEvaluator:
 
         with torch.no_grad():
             for batch in self.test_dataset:
-                numeric, categorical, pitcher, labels = self._move_batch_to_device(batch)
+                pitch_seq_numeric, pitch_seq_categorical, pitch_seq_mask, pitcher, labels = self._move_batch_to_device(batch)
 
-                model_out = self._forward_model(numeric=numeric, categorical=categorical, pitcher=pitcher)
+                model_out = self._forward_model(
+                    pitch_seq_numeric=pitch_seq_numeric,
+                    pitch_seq_categorical=pitch_seq_categorical,
+                    pitch_seq_mask=pitch_seq_mask,
+                    pitcher=pitcher
+                )
                 logits = model_out["logits"]
                 preds = torch.argmax(logits, dim=1)
 

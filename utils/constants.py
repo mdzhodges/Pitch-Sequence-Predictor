@@ -54,8 +54,8 @@ class Constants:
         'post_away_score', 'post_bat_score', 'post_fld_score', 'post_home_score',
         'release_extension', 'release_pos_x', 'release_pos_y', 'release_pos_z',
         'release_speed', 'release_spin_rate', 'spin_axis', 'spin_dir', 'stand',
-        'strikes', 'sv_id', 'swing_length', 'swing_path_tilt', 'sz_bot', 'sz_top',
-        'type', 'vx0', 'vy0', 'vz0', 'woba_denom', 'woba_value', 'zone'
+        'strikes', 'swing_length', 'swing_path_tilt', 'sz_bot', 'sz_top',
+        'type', 'vx0', 'vy0', 'vz0', 'woba_denom', 'woba_value', 'zone','game_pk'
     ]
     
     PITCH_TYPE_TO_IDX = {
